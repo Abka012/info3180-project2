@@ -1,21 +1,104 @@
 import os
+import secrets
 from dotenv import load_dotenv
 
 load_dotenv()
 
-class Config(object):
-    DEBUG = False
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'DriftDater$ec5etK3y2024!')
+
+def get_env_var(name, default=None, required=False):
+    """Get environment variable with optional validation."""
+    value = os.environ.get(name, default)
+    if required and not value:
+        raise ValueError(f"Required environment variable {name} is not set")
+    return value
+
+
+class Config:
+    """Base configuration with security defaults."""
     
-    SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI', '').replace('postgres://', 'postgresql://')
+    # Security
+    SECRET_KEY = get_env_var('SECRET_KEY') or secrets.token_hex(32)
+    
+    # Security headers
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    
+    # Database
+    SQLALCHEMY_DATABASE_URI = get_env_var(
+        'SQLALCHEMY_DATABASE_URI', 
+        'sqlite:///driftdater.db'
+    ).replace('postgres://', 'postgresql://')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+    }
     
-    UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', './uploads')
-    MAX_CONTENT_LENGTH = int(os.environ.get('MAX_CONTENT_LENGTH', 16777216))
+    # File uploads
+    UPLOAD_FOLDER = get_env_var('UPLOAD_FOLDER', './uploads')
+    MAX_CONTENT_LENGTH = int(get_env_var('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    MAX_FILENAME_LENGTH = 255
     
-    MAILTRAP_SMTP_HOST = os.environ.get('MAILTRAP_SMTP_HOST', 'sandbox.smtp.mailtrap.io')
-    MAILTRAP_SMTP_PORT = int(os.environ.get('MAILTRAP_SMTP_PORT', 2525))
-    MAILTRAP_SMTP_USER = os.environ.get('MAILTRAP_SMTP_USER')
-    MAILTRAP_SMTP_PASS = os.environ.get('MAILTRAP_SMTP_PASS')
-    MAILTRAP_FROM_EMAIL = os.environ.get('MAILTRAP_FROM_EMAIL', 'DriftDater <noreply@driftdater.com>')
+    # Mail
+    MAILTRAP_SMTP_HOST = get_env_var('MAILTRAP_SMTP_HOST', 'sandbox.smtp.mailtrap.io')
+    MAILTRAP_SMTP_PORT = int(get_env_var('MAILTRAP_SMTP_PORT', 2525))
+    MAILTRAP_SMTP_USER = get_env_var('MAILTRAP_SMTP_USER')
+    MAILTRAP_SMTP_PASS = get_env_var('MAILTRAP_SMTP_PASS')
+    MAILTRAP_FROM_EMAIL = get_env_var('MAILTRAP_FROM_EMAIL', 'DriftDater <noreply@driftdater.com>')
+    
+    # JWT Configuration
+    JWT_SECRET_KEY = get_env_var('JWT_SECRET_KEY') or secrets.token_hex(32)
+    JWT_ACCESS_TOKEN_EXPIRES = 604800
+    
+    # CORS
+    CORS_ORIGINS = get_env_var('CORS_ORIGINS', '*').split(',')
+
+    @classmethod
+    def init_app(cls, app):
+        """Initialize application."""
+        pass
+
+
+class DevelopmentConfig(Config):
+    """Development configuration."""
+    DEBUG = True
+    TESTING = False
+    SESSION_COOKIE_SECURE = False  # Allow HTTP in development
+
+
+class ProductionConfig(Config):
+    """Production configuration."""
+    DEBUG = False
+    TESTING = False
+    SESSION_COOKIE_SECURE = True
+    
+    @classmethod
+    def init_app(cls, app):
+        Config.init_app(app)
+
+
+class TestingConfig(Config):
+    """Testing configuration."""
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    WTF_CSRF_ENABLED = False
+    MAILTRAP_SMTP_USER = None
+    MAILTRAP_SMTP_PASS = None
+
+
+# Configuration dictionary
+config = {
+    'development': DevelopmentConfig,
+    'production': ProductionConfig,
+    'testing': TestingConfig,
+    'default': DevelopmentConfig
+}
+
+
+def get_config(env=None):
+    """Get configuration based on environment."""
+    if env is None:
+        env = os.environ.get('FLASK_ENV', 'development')
+    return config.get(env, config['default'])
