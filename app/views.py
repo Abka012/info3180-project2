@@ -1,6 +1,6 @@
 import os
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from flask import Blueprint, request, jsonify, current_app
 from app import db, bcrypt
 from app.models import User, Profile
@@ -15,8 +15,8 @@ bp = Blueprint('main', __name__)
 def generate_token(user_id):
     payload = {
         'user_id': user_id,
-        'exp': datetime.utcnow() + timedelta(days=7),
-        'iat': datetime.utcnow()
+        'exp': datetime.now(timezone.utc) + timedelta(days=7),
+        'iat': datetime.now(timezone.utc)
     }
     return jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
 
@@ -67,7 +67,7 @@ def get_user_from_token():
     token = auth_header.split(' ')[1]
     try:
         payload = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
-        user = User.query.get(payload['user_id'])
+        user = db.session.get(User, payload['user_id'])
         return user
     except:
         return None
@@ -308,7 +308,7 @@ def upload_picture():
 
 @bp.route('/api/profile/<int:user_id>', methods=['GET'])
 def view_other_profile(user_id):
-    profile = Profile.query.get(user_id)
+    profile = db.session.get(Profile, user_id)
     
     if not profile:
         return jsonify({'error': 'Profile not found'}), 404

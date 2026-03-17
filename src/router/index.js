@@ -43,6 +43,24 @@ const router = createRouter({
       path: '/verify/:token',
       name: 'verify',
       component: () => import('../views/VerifyView.vue')
+    },
+    {
+      path: '/browse',
+      name: 'browse',
+      component: () => import('../views/BrowseView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/matches',
+      name: 'matches',
+      component: () => import('../views/MatchesView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/notifications',
+      name: 'notifications',
+      component: () => import('../views/NotificationsView.vue'),
+      meta: { requiresAuth: true }
     }
   ]
 })

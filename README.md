@@ -4,26 +4,49 @@ A full-stack dating application built with Vue 3 (frontend) and Flask (backend).
 
 ## Features
 
-- **User Authentication**
-  - Registration with email validation
-  - Secure login/logout with JWT tokens
-  - Password hashing with bcrypt
+### User Authentication
+- Registration with email validation
+- Secure login/logout with JWT tokens
+- Password hashing with bcrypt
 
-- **Profile Management**
-  - Create and edit user profiles
-  - Profile fields: name, age, bio, location, interests, gender, occupation, relationship goals
-  - Profile picture upload
-  - Profile visibility controls (public/private)
+### Profile Management
+- Create and edit user profiles
+- Profile fields: name, age, bio, location, interests, gender, occupation, relationship goals
+- GPS coordinates for location-based matching
+- Age preferences (min/max range)
+- Profile picture upload
+- Profile visibility controls (public/private)
 
-- **Email Verification**
-  - Email verification via Mailtrap (fake SMTP)
+### Matching System
+- **Algorithm** with scoring criteria:
+  - Location proximity (GPS-based) - 25 points
+  - Age compatibility - 20 points
+  - Shared interests - 20 points (max 2)
+  - Relationship goal match - 20 points
+  - Gender preference - 15 points
+  - **Minimum score: 50 points to appear in matches**
+- Browse potential matches with filters (age, distance)
+- Like/Dislike/Pass functionality
+- Mutual match detection
+- Real-time match notifications
+
+### Notifications
+- Real-time notifications via WebSocket
+- Match notifications
+- Like notifications
+
+### Email Verification
+- Email verification via Mailtrap (fake SMTP)
 
 ## Tech Stack
 
-- **Frontend:** Vue 3, Vue Router, Axios
-- **Backend:** Flask, Flask-SQLAlchemy, Flask-Bcrypt, Flask-CORS
+- **Frontend:** Vue 3, Vue Router, Axios, Socket.io Client
+- **Backend:** Flask, Flask-SQLAlchemy, Flask-Bcrypt, Flask-CORS, Flask-SocketIO
 - **Database:** SQLite (development) / PostgreSQL (production)
 - **Authentication:** JWT tokens
+- **Real-time:** WebSocket (Socket.IO)
+- **Location:** Geopy for GPS distance calculation
+- **Testing:** Pytest
 
 ## Quick Start
 
@@ -92,6 +115,16 @@ source .venv/bin/activate
 pytest tests/ -v
 ```
 
+### Test Coverage (45 tests)
+- Authentication (15 tests)
+- Profile Management (7 tests)
+- Matching Algorithm (8 tests)
+- Matching Actions (6 tests)
+- Potential Matches (5 tests)
+- View Matches (2 tests)
+- Notifications (5 tests)
+- Match Score Endpoint (2 tests)
+
 ## API Endpoints
 
 ### Authentication
@@ -112,26 +145,75 @@ pytest tests/ -v
 | POST | `/api/profile/picture` | Upload profile picture |
 | GET | `/api/profile/<id>` | View other profile |
 
+### Matches
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/matches` | Get mutual matches |
+| GET | `/api/matches/potential` | Get potential matches |
+| POST | `/api/matches/like/<user_id>` | Like a user |
+| POST | `/api/matches/dislike/<user_id>` | Dislike a user |
+| POST | `/api/matches/pass/<user_id>` | Pass on a user |
+| GET | `/api/matches/score/<user_id>` | Get match score |
+
+### Notifications
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/notifications` | Get notifications |
+| GET | `/api/notifications/unread-count` | Get unread count |
+| PUT | `/api/notifications/<id>/read` | Mark as read |
+| PUT | `/api/notifications/read-all` | Mark all as read |
+
 ## Project Structure
 
 ```
 datingApp/
 ├── app/
-│   ├── __init__.py      # Flask app factory
+│   ├── __init__.py      # Flask app factory + SocketIO
 │   ├── config.py        # Configuration
 │   ├── models.py        # Database models
-│   ├── forms.py        # WTForms
-│   └── views.py         # API endpoints
+│   ├── forms.py         # WTForms
+│   ├── views.py         # Auth & Profile endpoints
+│   ├── matches.py       # Matching algorithm & endpoints
+│   └── notifications.py # Notification endpoints
 ├── src/
-│   ├── views/          # Vue views
-│   ├── components/     # Vue components
+│   ├── views/           # Vue views
+│   │   ├── BrowseView.vue       # Browse/swi
+│   │   ├── MatchesView.vue      # Mutual matches
+│   │   ├── NotificationsView.vue
+│   │   └── ...
+│   ├── components/      # Vue components
 │   ├── services/       # API services
+│   │   ├── authService.js
+│   │   ├── matchService.js
+│   │   ├── notificationService.js
+│   │   └── socketService.js
 │   └── router/         # Vue router
 ├── tests/              # Test suite
+│   ├── test_api.py     # Auth & Profile tests
+│   ├── test_matching.py # Matching tests
+│   ├── helpers.py      # Test fixtures
+│   └── conftest.py     # Pytest fixtures
 ├── uploads/            # Uploaded files
 ├── run.py              # Flask entry point
-└── start.sh            # Start script
+├── start.sh            # Start both servers
+├── start-backend.sh    # Start backend only
+├── start-frontend.sh   # Start frontend only
+└── run-tests.sh        # Run tests
 ```
+
+## Matching Algorithm Details
+
+The matching score is calculated based on:
+
+| Criterion | Max Points | Description |
+|-----------|------------|-------------|
+| Location | 25 | GPS distance within preferred radius |
+| Age | 20 | Within user's preferred age range |
+| Interests | 20 | Shared interests (+10 each, max 2) |
+| Relationship Goal | 20 | Same relationship goal |
+| Gender Preference | 15 | Matches user's preferred gender |
+
+Users with a score below 50 are filtered out from potential matches.
 
 ## Database
 
@@ -147,6 +229,18 @@ SQLALCHEMY_DATABASE_URI=postgresql://user:pass@localhost/driftdater
 ```bash
 createdb driftdater
 ```
+
+## WebSocket Events
+
+Real-time notifications via Socket.IO:
+
+| Event | Direction | Description |
+|-------|-----------|-------------|
+| `connect` | Client → Server | Connect to WebSocket |
+| `subscribe` | Client → Server | Subscribe to user notifications |
+| `new_match` | Server → Client | Mutual match occurred |
+| `new_like` | Server → Client | Someone liked you |
+| `notification` | Server → Client | General notification |
 
 ## License
 

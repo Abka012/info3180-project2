@@ -1,7 +1,10 @@
 from app import db
-from datetime import datetime
+from datetime import datetime, timezone
 import secrets
 import string
+
+def utc_now():
+    return datetime.now(timezone.utc)
 
 def generate_verification_token():
     return ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(64))
@@ -14,9 +17,13 @@ class User(db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     is_verified = db.Column(db.Boolean, default=False)
     verification_token = db.Column(db.String(64), unique=True, default=generate_verification_token)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    last_active = db.Column(db.DateTime, default=utc_now)
     
     profile = db.relationship('Profile', backref='user', uselist=False, cascade='all, delete-orphan')
+    likes_sent = db.relationship('Like', foreign_keys='Like.from_user_id', backref='from_user', lazy='dynamic')
+    likes_received = db.relationship('Like', foreign_keys='Like.to_user_id', backref='to_user', lazy='dynamic')
+    notifications = db.relationship('Notification', foreign_keys='Notification.user_id', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<User {self.email}>'
@@ -33,6 +40,17 @@ class Profile(db.Model):
     location = db.Column(db.String(100))
     geo_preferences = db.Column(db.String(50), default='anywhere')
     
+    # GPS coordinates
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+    
+    # Location radius preference (in km)
+    location_radius = db.Column(db.Integer, default=50)
+    
+    # Age preferences
+    preferred_age_min = db.Column(db.Integer, default=18)
+    preferred_age_max = db.Column(db.Integer, default=50)
+    
     interests = db.Column(db.JSON, default=list)
     
     profile_picture = db.Column(db.String(255))
@@ -45,8 +63,8 @@ class Profile(db.Model):
     relationship_goal = db.Column(db.String(50))
     occupation = db.Column(db.String(100))
     
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     
     def to_dict(self):
         return {
@@ -57,6 +75,11 @@ class Profile(db.Model):
             'bio': self.bio,
             'location': self.location,
             'geo_preferences': self.geo_preferences,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'location_radius': self.location_radius,
+            'preferred_age_min': self.preferred_age_min,
+            'preferred_age_max': self.preferred_age_max,
             'interests': self.interests or [],
             'profile_picture': self.profile_picture,
             'visibility': self.visibility,
@@ -70,3 +93,73 @@ class Profile(db.Model):
     
     def __repr__(self):
         return f'<Profile {self.name}>'
+
+class Like(db.Model):
+    __tablename__ = 'likes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    from_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    to_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    status = db.Column(db.String(20), default='liked')  # 'liked', 'disliked', 'passed'
+    created_at = db.Column(db.DateTime, default=utc_now)
+    
+    __table_args__ = (
+        db.UniqueConstraint('from_user_id', 'to_user_id', name='unique_like'),
+    )
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'from_user_id': self.from_user_id,
+            'to_user_id': self.to_user_id,
+            'status': self.status,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class Match(db.Model):
+    __tablename__ = 'matches'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user1_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user2_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    
+    user1 = db.relationship('User', foreign_keys=[user1_id])
+    user2 = db.relationship('User', foreign_keys=[user2_id])
+    
+    __table_args__ = (
+        db.UniqueConstraint('user1_id', 'user2_id', name='unique_match'),
+    )
+    
+    def to_dict(self, include_profiles=False):
+        result = {
+            'id': self.id,
+            'user1_id': self.user1_id,
+            'user2_id': self.user2_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+        return result
+
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    type = db.Column(db.String(50), nullable=False)  # 'match', 'like', 'message'
+    message = db.Column(db.String(255), nullable=False)
+    from_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    
+    from_user = db.relationship('User', foreign_keys=[from_user_id])
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'type': self.type,
+            'message': self.message,
+            'from_user_id': self.from_user_id,
+            'is_read': self.is_read,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }

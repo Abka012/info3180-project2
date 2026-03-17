@@ -9,7 +9,13 @@
           <router-link to="/about">About</router-link>
           
           <template v-if="isAuthenticated">
+            <router-link to="/browse">Browse</router-link>
+            <router-link to="/matches">Matches</router-link>
             <router-link to="/profile">My Profile</router-link>
+            <router-link to="/notifications" class="notification-link">
+              Notifications
+              <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
+            </router-link>
             <a href="#" @click.prevent="handleLogout">Logout</a>
           </template>
           
@@ -24,27 +30,57 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import authService from '../services/authService';
+import notificationService from '../services/notificationService';
+import socketService from '../services/socketService';
 
 const router = useRouter();
 const isAuthenticated = ref(false);
+const unreadCount = ref(0);
 
 const checkAuth = () => {
   isAuthenticated.value = authService.isAuthenticated();
 };
 
-const handleLogout = async () => {
+const loadUnreadCount = async () => {
+  if (!isAuthenticated.value) return;
   try {
-    await authService.logout();
-    router.push('/');
+    const data = await notificationService.getUnreadCount();
+    unreadCount.value = data.unread_count;
   } catch (error) {
-    console.error('Logout failed');
+    console.error('Failed to load unread count:', error);
   }
 };
 
-onMounted(checkAuth);
+const handleLogout = async () => {
+  socketService.disconnect();
+  await authService.logout();
+  router.push('/');
+};
+
+const handleNewNotification = () => {
+  loadUnreadCount();
+};
+
+onMounted(() => {
+  checkAuth();
+  loadUnreadCount();
+  
+  if (isAuthenticated.value) {
+    socketService.connect();
+    socketService.on('notification', handleNewNotification);
+    socketService.on('new_match', handleNewNotification);
+    socketService.on('new_like', handleNewNotification);
+  }
+});
+
+onUnmounted(() => {
+  socketService.off('notification', handleNewNotification);
+  socketService.off('new_match', handleNewNotification);
+  socketService.off('new_like', handleNewNotification);
+});
 </script>
 
 <style scoped>
@@ -87,6 +123,22 @@ onMounted(checkAuth);
 
 .nav-links a:hover {
   color: #e91e63;
+}
+
+.notification-link {
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: -8px;
+  right: -12px;
+  background: #e91e63;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: bold;
 }
 
 .btn-register {
