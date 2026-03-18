@@ -10,11 +10,15 @@
         <div class="form-group">
           <label>
             <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+              <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
             </svg>
-            Location
+            Age Range
           </label>
-          <input v-model="searchParams.location" type="text" placeholder="City or area" class="form-input" />
+          <div class="age-inputs">
+            <input v-model.number="searchParams.age_min" type="number" placeholder="Min" min="18" max="100" class="form-input" />
+            <span class="age-separator">-</span>
+            <input v-model.number="searchParams.age_max" type="number" placeholder="Max" min="18" max="100" class="form-input" />
+          </div>
         </div>
         
         <div class="form-group">
@@ -100,7 +104,6 @@
             <option value="newest">Newest</option>
             <option value="oldest">Oldest</option>
             <option value="similarity">Most Similar</option>
-            <option value="distance">Nearest</option>
             <option value="age_asc">Age: Youngest first</option>
             <option value="age_desc">Age: Oldest first</option>
           </select>
@@ -139,12 +142,6 @@
         
         <div class="profile-info">
           <h3>{{ profile.name }}, {{ profile.age }}</h3>
-          <p class="location">
-            <svg xmlns="http://www.w3.org/2000/svg" class="location-icon" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-            </svg>
-            {{ profile.location }}
-          </p>
           
           <p class="bio">{{ profile.bio?.substring(0, 80) }}{{ profile.bio?.length > 80 ? '...' : '' }}</p>
           
@@ -173,7 +170,6 @@ import { ref, reactive } from 'vue';
 import searchService from '../services/searchService';
 
 const searchParams = reactive({
-  location: '',
   age_min: null,
   age_max: null,
   gender: '',
@@ -216,7 +212,6 @@ const handleSearch = async () => {
 };
 
 const clearFilters = () => {
-  searchParams.location = '';
   searchParams.age_min = null;
   searchParams.age_max = null;
   searchParams.gender = '';
@@ -493,25 +488,6 @@ const toggleBookmark = async (profile) => {
 
 :global(.dark) .profile-info h3 {
   color: #f9fafb;
-}
-
-.location {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  color: #6b7280;
-  font-size: 0.8rem;
-  margin: 0 0 0.75rem;
-}
-
-:global(.dark) .location {
-  color: #9ca3af;
-}
-
-.location-icon {
-  width: 12px;
-  height: 12px;
-  color: #14b8a6;
 }
 
 .bio {

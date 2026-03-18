@@ -15,7 +15,7 @@ class TestMatchingAlgorithm:
     """Test the matching algorithm scoring."""
     
     def test_match_score_within_radius(self, app, client, profile1, profile2, token1):
-        """Test match score when profiles are within location radius."""
+        """Test match score when profiles are compatible."""
         response = client.get('/api/matches/potential',
                             headers={'Authorization': f'Bearer {token1}'})
         
@@ -25,18 +25,16 @@ class TestMatchingAlgorithm:
         
         match = next((m for m in matches if m['user_id'] == profile2.user_id), None)
         assert match is not None
-        assert match['match_score'] >= 25  # Location points
+        assert match['match_score'] >= 20
     
     def test_match_score_outside_radius(self, app, client, profile1, token1):
-        """Test match score when profile is outside location radius."""
-        # profile3 is in LA (34.0522, -118.2437), profile1 is in NYC
+        """Test match score for incompatible profile."""
         response = client.get('/api/matches/potential',
                             headers={'Authorization': f'Bearer {token1}'})
         
         assert response.status_code == 200
         matches = response.json
         
-        # profile3 should be filtered out (score < 50)
         profile_ids = [m['user_id'] for m in matches]
         assert profile1.user_id + 2 not in profile_ids
     

@@ -1,9 +1,10 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory, current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from app.config import Config
+import os
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -23,6 +24,14 @@ def create_app():
     db.init_app(app)
     bcrypt.init_app(app)
     socketio.init_app(app, cors_allowed_origins="*", async_mode='threading')
+    
+    # Serve uploaded files
+    @app.route('/uploads/<path:filename>')
+    def serve_upload(filename):
+        upload_folder = current_app.config.get("UPLOAD_FOLDER", "./uploads")
+        if not os.path.isabs(upload_folder):
+            upload_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), upload_folder)
+        return send_from_directory(upload_folder, filename)
     
     # Register blueprints
     from app import views

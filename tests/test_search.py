@@ -56,7 +56,6 @@ def test_profile(client, app, test_user):
             name='Test User',
             age=25,
             bio='Test bio',
-            location='New York',
             gender='male',
             gender_preference='female',
             interests=['music', 'travel'],
@@ -73,21 +72,8 @@ class TestSearch:
         response = client.post('/api/matches/search', json={})
         assert response.status_code == 401
 
-    def test_search_by_location(self, client, test_user, test_profile, app):
-        other_user_id = create_test_user(client, 'other@test.com', 'password123', 'Other User', 'Los Angeles')
-        
-        token = test_user['token']
-        response = client.post(
-            '/api/matches/search',
-            json={'location': 'Los Angeles'},
-            headers={'Authorization': f'Bearer {token}'}
-        )
-        assert response.status_code == 200
-        data = response.get_json()
-        assert len(data) > 0
-
     def test_search_by_age_range(self, client, test_user, test_profile, app):
-        other_user_id = create_test_user(client, 'other@test.com', 'password123', 'Other User', 'New York', 30)
+        other_user_id = create_test_user(client, 'other@test.com', 'password123', 'Other User', 30)
         
         token = test_user['token']
         response = client.post(
@@ -98,7 +84,7 @@ class TestSearch:
         assert response.status_code == 200
 
     def test_search_by_interests(self, client, test_user, test_profile, app):
-        other_user_id = create_test_user(client, 'other@test.com', 'password123', 'Other User', 'New York', 25, ['music', 'gaming'])
+        other_user_id = create_test_user(client, 'other@test.com', 'password123', 'Other User', 25, ['music', 'gaming'])
         
         token = test_user['token']
         response = client.post(
@@ -202,7 +188,7 @@ class TestBookmarks:
         assert response.status_code == 404
 
 
-def create_test_user(client, email, password, name, location='New York', age=25, interests=None):
+def create_test_user(client, email, password, name, age=25, interests=None):
     if interests is None:
         interests = ['music']
     
@@ -229,7 +215,6 @@ def create_test_user(client, email, password, name, location='New York', age=25,
             name=name,
             age=age,
             bio='Test bio',
-            location=location,
             gender='male',
             gender_preference='female',
             interests=interests,

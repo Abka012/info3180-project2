@@ -19,7 +19,6 @@
         
         <div class="match-info">
           <h3>{{ match.profile.name }}, {{ match.profile.age }}</h3>
-          <p class="location">{{ match.profile.location }}</p>
           <p class="matched-at">Matched {{ formatDate(match.matched_at) }}</p>
         </div>
       </div>
@@ -171,11 +170,6 @@ h1 {
 .match-info h3 {
   margin: 0 0 5px 0;
   color: #333;
-}
-
-.location {
-  color: #666;
-  margin: 0 0 10px 0;
 }
 
 .matched-at {

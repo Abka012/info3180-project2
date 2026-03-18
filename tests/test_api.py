@@ -153,7 +153,6 @@ class TestProfile:
                 'name': 'John Doe',
                 'age': 25,
                 'bio': 'I love hiking',
-                'location': 'New York',
                 'interests': 'hiking, reading, music, cooking, travel',
                 'gender': 'male',
                 'gender_preference': 'all',

@@ -68,7 +68,7 @@ const loadConversations = async () => {
 };
 
 const openChat = (userId) => {
-  router.push(`/chat/${userId}`);
+  router.push(`/messages/${userId}`);
 };
 
 const formatTime = (dateString) => {

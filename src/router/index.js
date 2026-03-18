@@ -29,14 +29,39 @@ const router = createRouter({
     },
     {
       path: '/profile',
-      name: 'profile',
       component: () => import('../views/ProfileView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          name: 'profile',
+          component: () => import('../views/ProfileView.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: ':userId',
+          name: 'viewProfile',
+          component: () => import('../views/ProfileView.vue'),
+          meta: { requiresAuth: true }
+        }
+      ]
     },
     {
       path: '/profile/edit',
       name: 'editProfile',
       component: () => import('../views/EditProfileView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/profile/settings',
+      name: 'profileSettings',
+      component: () => import('../views/SettingsView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: () => import('../views/SettingsView.vue'),
       meta: { requiresAuth: true }
     },
     {
@@ -63,16 +88,34 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/messages',
+      name: 'messages',
+      component: () => import('../views/MessagesView.vue'),
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          name: 'conversations',
+          component: () => import('../views/ConversationsView.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: ':userId',
+          name: 'chat',
+          component: () => import('../views/ChatView.vue'),
+          meta: { requiresAuth: true }
+        }
+      ]
+    },
+    {
       path: '/conversations',
-      name: 'conversations',
-      component: () => import('../views/ConversationsView.vue'),
-      meta: { requiresAuth: true }
+      name: 'conversationsLegacy',
+      redirect: '/messages'
     },
     {
       path: '/chat/:userId',
-      name: 'chat',
-      component: () => import('../views/ChatView.vue'),
-      meta: { requiresAuth: true }
+      name: 'chatLegacy',
+      redirect: to => ({ name: 'chat', params: { userId: to.params.userId } })
     },
     {
       path: '/search',
@@ -85,6 +128,11 @@ const router = createRouter({
       name: 'favorites',
       component: () => import('../views/FavoritesView.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'notFound',
+      component: () => import('../views/NotFoundView.vue')
     }
   ]
 })

@@ -21,16 +21,6 @@
           class="filter-input"
         />
       </div>
-      <div class="filter-group">
-        <label>Distance (km):</label>
-        <input 
-          type="number" 
-          v-model="filters.distance" 
-          placeholder="Max" 
-          min="1"
-          class="filter-input"
-        />
-      </div>
       <button @click="applyFilters" class="filter-btn">Apply Filters</button>
     </div>
 
@@ -56,12 +46,6 @@
       
       <div class="profile-info">
         <h2>{{ currentProfile.name }}, {{ currentProfile.age }}</h2>
-        <p class="location">
-          <svg xmlns="http://www.w3.org/2000/svg" class="location-icon" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-          </svg>
-          {{ currentProfile.location }}
-        </p>
         
         <p class="bio">{{ currentProfile.bio }}</p>
         
@@ -126,8 +110,7 @@ const matchedProfile = ref(null);
 
 const filters = ref({
   ageMin: 18,
-  ageMax: 50,
-  distance: 50
+  ageMax: 50
 });
 
 const currentProfile = ref(null);
@@ -367,25 +350,6 @@ onMounted(loadProfiles);
 
 :global(.dark) .profile-info h2 {
   color: #f9fafb;
-}
-
-.location {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  color: #6b7280;
-  font-size: 0.875rem;
-  margin-bottom: 0.75rem;
-}
-
-:global(.dark) .location {
-  color: #9ca3af;
-}
-
-.location-icon {
-  width: 14px;
-  height: 14px;
-  color: #14b8a6;
 }
 
 .bio {

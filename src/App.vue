@@ -1,13 +1,11 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
 import AppHeader from "@/components/AppHeader.vue";
-import AppFooter from "@/components/AppFooter.vue";
 </script>
 
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
     <AppHeader />
-
     <main class="pt-16">
       <router-view v-slot="{ Component }">
         <transition name="page" mode="out-in">
@@ -15,8 +13,6 @@ import AppFooter from "@/components/AppFooter.vue";
         </transition>
       </router-view>
     </main>
-    
-    <AppFooter />
   </div>
 </template>
 

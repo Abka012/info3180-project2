@@ -1,6 +1,7 @@
 {
   "name": "info3180-vuejs-flask-starter",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
     "dev": "node --no-deprecation node_modules/vite/bin/vite.js",
     "build": "vite build",
