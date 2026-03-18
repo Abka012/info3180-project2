@@ -10,7 +10,9 @@
           
           <template v-if="isAuthenticated">
             <router-link to="/browse">Browse</router-link>
+            <router-link to="/search">Search</router-link>
             <router-link to="/matches">Matches</router-link>
+            <router-link to="/favorites">Favorites</router-link>
             <router-link to="/profile">My Profile</router-link>
             <router-link to="/notifications" class="notification-link">
               Notifications

@@ -193,3 +193,27 @@ class Message(db.Model):
         data = self.to_dict()
         data['is_sent'] = self.sender_id == current_user_id
         return data
+
+
+class Bookmark(db.Model):
+    __tablename__ = 'bookmarks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    bookmarked_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    
+    user = db.relationship('User', foreign_keys=[user_id])
+    bookmarked_user = db.relationship('User', foreign_keys=[bookmarked_user_id])
+    
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'bookmarked_user_id', name='unique_bookmark'),
+    )
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'bookmarked_user_id': self.bookmarked_user_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }

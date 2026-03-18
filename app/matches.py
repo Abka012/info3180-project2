@@ -3,7 +3,7 @@ import math
 from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify, current_app
 from app import db
-from app.models import User, Profile, Like, Match, Notification
+from app.models import User, Profile, Like, Match, Notification, Bookmark
 from app.views import get_user_from_token
 
 bp = Blueprint('matches', __name__, url_prefix='/api/matches')
@@ -378,3 +378,159 @@ def get_match_score(to_user_id):
         'to_user_id': to_user_id,
         **result
     }), 200
+
+
+@bp.route('/search', methods=['POST'])
+def search_profiles():
+    """Search profiles by various criteria."""
+    user = get_user_from_token()
+    if not user:
+        return jsonify({'error': 'Authentication required'}), 401
+    
+    profile = Profile.query.filter_by(user_id=user.id).first()
+    if not profile:
+        return jsonify({'error': 'Create a profile first'}), 400
+    
+    data = request.get_json() or {}
+    
+    location = data.get('location', '').strip().lower()
+    age_min = data.get('age_min')
+    age_max = data.get('age_max')
+    interests = data.get('interests', [])
+    gender = data.get('gender')
+    relationship_goal = data.get('relationship_goal')
+    occupation = data.get('occupation', '').strip().lower()
+    sort_by = data.get('sort_by', 'newest')
+    
+    query = Profile.query.filter(
+        Profile.user_id != user.id,
+        Profile.visibility == True
+    )
+    
+    if location:
+        query = query.filter(Profile.location.ilike(f'%{location}%'))
+    if age_min:
+        query = query.filter(Profile.age >= age_min)
+    if age_max:
+        query = query.filter(Profile.age <= age_max)
+    if gender:
+        query = query.filter(Profile.gender == gender)
+    if relationship_goal:
+        query = query.filter(Profile.relationship_goal == relationship_goal)
+    if occupation:
+        query = query.filter(Profile.occupation.ilike(f'%{occupation}%'))
+    if interests and isinstance(interests, list):
+        for interest in interests:
+            query = query.filter(Profile.interests.contains(interest))
+    
+    if sort_by == 'newest':
+        query = query.order_by(Profile.created_at.desc())
+    elif sort_by == 'oldest':
+        query = query.order_by(Profile.created_at.asc())
+    elif sort_by == 'age_asc':
+        query = query.order_by(Profile.age.asc())
+    elif sort_by == 'age_desc':
+        query = query.order_by(Profile.age.desc())
+    
+    profiles = query.limit(50).all()
+    
+    results = []
+    for p in profiles:
+        match_result = calculate_match_score(profile, p)
+        profile_data = p.to_dict()
+        profile_data['match_score'] = match_result['score']
+        profile_data['match_details'] = match_result['details']
+        
+        bookmark = Bookmark.query.filter_by(
+            user_id=user.id,
+            bookmarked_user_id=p.user_id
+        ).first()
+        profile_data['is_bookmarked'] = bookmark is not None
+        
+        results.append(profile_data)
+    
+    if sort_by == 'similarity':
+        results.sort(key=lambda x: x['match_score'], reverse=True)
+    elif sort_by == 'distance':
+        results.sort(key=lambda x: x['match_details'].get('distance', 99999))
+    
+    return jsonify(results), 200
+
+
+@bp.route('/bookmarks', methods=['GET'])
+def get_bookmarks():
+    """Get all bookmarked/favorite profiles."""
+    user = get_user_from_token()
+    if not user:
+        return jsonify({'error': 'Authentication required'}), 401
+    
+    current_profile = Profile.query.filter_by(user_id=user.id).first()
+    if not current_profile:
+        return jsonify({'error': 'Create a profile first'}), 400
+    
+    bookmarks = Bookmark.query.filter_by(user_id=user.id).order_by(
+        Bookmark.created_at.desc()
+    ).all()
+    
+    results = []
+    for bookmark in bookmarks:
+        profile = Profile.query.filter_by(user_id=bookmark.bookmarked_user_id).first()
+        if profile:
+            profile_data = profile.to_dict()
+            match_result = calculate_match_score(current_profile, profile)
+            profile_data['match_score'] = match_result['score']
+            profile_data['match_details'] = match_result['details']
+            profile_data['bookmarked_at'] = bookmark.created_at.isoformat() if bookmark.created_at else None
+            results.append(profile_data)
+    
+    return jsonify(results), 200
+
+
+@bp.route('/bookmark/<int:to_user_id>', methods=['POST'])
+def add_bookmark(to_user_id):
+    """Bookmark a user profile."""
+    user = get_user_from_token()
+    if not user:
+        return jsonify({'error': 'Authentication required'}), 401
+    
+    if user.id == to_user_id:
+        return jsonify({'error': 'Cannot bookmark yourself'}), 400
+    
+    target_profile = Profile.query.filter_by(user_id=to_user_id).first()
+    if not target_profile:
+        return jsonify({'error': 'User not found'}), 404
+    
+    existing = Bookmark.query.filter_by(
+        user_id=user.id,
+        bookmarked_user_id=to_user_id
+    ).first()
+    
+    if existing:
+        return jsonify({'message': 'Already bookmarked'}), 200
+    
+    bookmark = Bookmark(user_id=user.id, bookmarked_user_id=to_user_id)
+    db.session.add(bookmark)
+    db.session.commit()
+    
+    return jsonify({'message': 'Profile bookmarked'}), 201
+
+
+@bp.route('/bookmark/<int:to_user_id>', methods=['DELETE'])
+def remove_bookmark(to_user_id):
+    """Remove a bookmark."""
+    user = get_user_from_token()
+    if not user:
+        return jsonify({'error': 'Authentication required'}), 401
+    
+    bookmark = Bookmark.query.filter_by(
+        user_id=user.id,
+        bookmarked_user_id=to_user_id
+    ).first()
+    
+    if not bookmark:
+        return jsonify({'error': 'Bookmark not found'}), 404
+    
+    db.session.delete(bookmark)
+    db.session.commit()
+    
+    return jsonify({'message': 'Bookmark removed'}), 200

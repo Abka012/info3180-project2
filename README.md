@@ -45,6 +45,19 @@ A full-stack dating application built with Vue 3 (frontend) and Flask (backend).
 - Automatic message cleanup after 90 days
 - Push notifications for background messages
 
+### Search & Discovery
+- Search profiles by:
+  - Location (city/area)
+  - Age range
+  - Interests
+  - Gender
+  - Relationship goal
+  - Occupation
+- Sort options: newest, oldest, most similar, nearest, age
+- Filter applied matches
+- Save favorite/bookmarked profiles
+- View and manage favorites
+
 ### Email Verification
 - Email verification via Mailtrap (fake SMTP)
 
@@ -125,7 +138,7 @@ source .venv/bin/activate
 pytest tests/ -v
 ```
 
-### Test Coverage (53 tests)
+### Test Coverage (65 tests)
 - Authentication (15 tests)
 - Profile Management (7 tests)
 - Matching Algorithm (8 tests)
@@ -135,6 +148,8 @@ pytest tests/ -v
 - Notifications (5 tests)
 - Match Score Endpoint (2 tests)
 - Messaging (8 tests)
+- Search (5 tests)
+- Bookmarks (7 tests)
 
 ## API Endpoints
 
@@ -185,6 +200,14 @@ pytest tests/ -v
 | POST | `/api/messages/typing/<user_id>` | Send typing status |
 | POST | `/api/messages/cleanup` | Delete messages older than 90 days |
 
+### Search & Bookmarks
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/matches/search` | Search profiles by criteria |
+| GET | `/api/matches/bookmarks` | Get bookmarked profiles |
+| POST | `/api/matches/bookmark/<user_id>` | Bookmark a profile |
+| DELETE | `/api/matches/bookmark/<user_id>` | Remove bookmark |
+
 ## Project Structure
 
 ```
@@ -197,13 +220,16 @@ datingApp/
 │   ├── views.py         # Auth & Profile endpoints
 │   ├── matches.py       # Matching algorithm & endpoints
 │   ├── notifications.py # Notification endpoints
-│   └── messages.py      # Messaging endpoints
+│   ├── messages.py      # Messaging endpoints
+│   └── bookmarks.py     # Search & bookmark endpoints
 ├── src/
 │   ├── views/           # Vue views
 │   │   ├── BrowseView.vue       # Browse/swi
 │   │   ├── MatchesView.vue      # Mutual matches
 │   │   ├── ConversationsView.vue # Message conversations
 │   │   ├── ChatView.vue         # Chat with messages
+│   │   ├── SearchView.vue       # Advanced search
+│   │   ├── FavoritesView.vue    # Bookmarked profiles
 │   │   ├── NotificationsView.vue
 │   │   └── ...
 │   ├── components/      # Vue components
@@ -212,6 +238,7 @@ datingApp/
 │   │   ├── matchService.js
 │   │   ├── notificationService.js
 │   │   ├── messageService.js
+│   │   ├── searchService.js
 │   │   └── socketService.js
 │   └── router/         # Vue router
 ├── public/
@@ -220,6 +247,7 @@ datingApp/
 │   ├── test_api.py     # Auth & Profile tests
 │   ├── test_matching.py # Matching tests
 │   ├── test_messaging.py # Messaging tests
+│   ├── test_search.py  # Search & bookmark tests
 │   ├── helpers.py      # Test fixtures
 │   └── conftest.py     # Pytest fixtures
 ├── uploads/            # Uploaded files
