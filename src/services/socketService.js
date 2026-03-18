@@ -3,6 +3,21 @@ import authService from './authService';
 
 let socket = null;
 
+const requestNotificationPermission = async () => {
+  if ('Notification' in window && Notification.permission === 'default') {
+    await Notification.requestPermission();
+  }
+};
+
+const showNotification = (title, body, icon) => {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, {
+      body,
+      icon: icon || '/icon-192.png'
+    });
+  }
+};
+
 export const socketService = {
   connect() {
     if (socket?.connected) return socket;
@@ -15,7 +30,8 @@ export const socketService = {
     socket.on('connect', () => {
       console.log('Socket connected:', socket.id);
       
-      // Subscribe to user notifications
+      requestNotificationPermission();
+      
       const user = authService.getStoredUser();
       if (user) {
         socket.emit('subscribe', { user_id: user.id });
@@ -28,6 +44,16 @@ export const socketService = {
     
     socket.on('connect_error', (error) => {
       console.error('Socket connection error:', error);
+    });
+
+    socket.on('new_message', (data) => {
+      const user = authService.getStoredUser();
+      if (user && data.sender_id !== user.id) {
+        showNotification(
+          data.sender_name || 'New Message',
+          data.content.substring(0, 100)
+        );
+      }
     });
     
     return socket;

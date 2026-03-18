@@ -14,7 +14,11 @@
             <router-link to="/profile">My Profile</router-link>
             <router-link to="/notifications" class="notification-link">
               Notifications
-              <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
+              <span v-if="totalUnread > 0" class="badge">{{ totalUnread }}</span>
+            </router-link>
+            <router-link to="/conversations" class="message-link">
+              Messages
+              <span v-if="messageUnread > 0" class="badge">{{ messageUnread }}</span>
             </router-link>
             <a href="#" @click.prevent="handleLogout">Logout</a>
           </template>
@@ -34,11 +38,17 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import authService from '../services/authService';
 import notificationService from '../services/notificationService';
+import messageService from '../services/messageService';
 import socketService from '../services/socketService';
 
 const router = useRouter();
 const isAuthenticated = ref(false);
 const unreadCount = ref(0);
+const messageUnread = ref(0);
+
+const totalUnread = computed(() => unreadCount.value + messageUnread.value);
+
+import { computed } from 'vue';
 
 const checkAuth = () => {
   isAuthenticated.value = authService.isAuthenticated();
@@ -47,8 +57,12 @@ const checkAuth = () => {
 const loadUnreadCount = async () => {
   if (!isAuthenticated.value) return;
   try {
-    const data = await notificationService.getUnreadCount();
-    unreadCount.value = data.unread_count;
+    const [notifData, msgData] = await Promise.all([
+      notificationService.getUnreadCount(),
+      messageService.getUnreadCount()
+    ]);
+    unreadCount.value = notifData.unread_count;
+    messageUnread.value = msgData.unread_count;
   } catch (error) {
     console.error('Failed to load unread count:', error);
   }
@@ -64,6 +78,10 @@ const handleNewNotification = () => {
   loadUnreadCount();
 };
 
+const handleNewMessage = () => {
+  loadUnreadCount();
+};
+
 onMounted(() => {
   checkAuth();
   loadUnreadCount();
@@ -73,6 +91,7 @@ onMounted(() => {
     socketService.on('notification', handleNewNotification);
     socketService.on('new_match', handleNewNotification);
     socketService.on('new_like', handleNewNotification);
+    socketService.on('new_message', handleNewMessage);
   }
 });
 
@@ -80,6 +99,7 @@ onUnmounted(() => {
   socketService.off('notification', handleNewNotification);
   socketService.off('new_match', handleNewNotification);
   socketService.off('new_like', handleNewNotification);
+  socketService.off('new_message', handleNewMessage);
 });
 </script>
 

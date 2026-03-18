@@ -35,6 +35,16 @@ A full-stack dating application built with Vue 3 (frontend) and Flask (backend).
 - Match notifications
 - Like notifications
 
+### Messaging System
+- Real-time messaging between matched users
+- Conversation list with unread counts
+- Message history with pagination
+- Typing indicator (shows when user is typing)
+- Read receipts (✓ = sent, ✓✓ = read)
+- Message limit: 1000 characters
+- Automatic message cleanup after 90 days
+- Push notifications for background messages
+
 ### Email Verification
 - Email verification via Mailtrap (fake SMTP)
 
@@ -115,7 +125,7 @@ source .venv/bin/activate
 pytest tests/ -v
 ```
 
-### Test Coverage (45 tests)
+### Test Coverage (53 tests)
 - Authentication (15 tests)
 - Profile Management (7 tests)
 - Matching Algorithm (8 tests)
@@ -124,6 +134,7 @@ pytest tests/ -v
 - View Matches (2 tests)
 - Notifications (5 tests)
 - Match Score Endpoint (2 tests)
+- Messaging (8 tests)
 
 ## API Endpoints
 
@@ -163,6 +174,17 @@ pytest tests/ -v
 | PUT | `/api/notifications/<id>/read` | Mark as read |
 | PUT | `/api/notifications/read-all` | Mark all as read |
 
+### Messages
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/messages` | Get all conversations |
+| GET | `/api/messages/<user_id>` | Get message history |
+| POST | `/api/messages/<user_id>` | Send message |
+| PUT | `/api/messages/<message_id>/read` | Mark message as read |
+| GET | `/api/messages/unread` | Get unread message count |
+| POST | `/api/messages/typing/<user_id>` | Send typing status |
+| POST | `/api/messages/cleanup` | Delete messages older than 90 days |
+
 ## Project Structure
 
 ```
@@ -174,11 +196,14 @@ datingApp/
 │   ├── forms.py         # WTForms
 │   ├── views.py         # Auth & Profile endpoints
 │   ├── matches.py       # Matching algorithm & endpoints
-│   └── notifications.py # Notification endpoints
+│   ├── notifications.py # Notification endpoints
+│   └── messages.py      # Messaging endpoints
 ├── src/
 │   ├── views/           # Vue views
 │   │   ├── BrowseView.vue       # Browse/swi
 │   │   ├── MatchesView.vue      # Mutual matches
+│   │   ├── ConversationsView.vue # Message conversations
+│   │   ├── ChatView.vue         # Chat with messages
 │   │   ├── NotificationsView.vue
 │   │   └── ...
 │   ├── components/      # Vue components
@@ -186,11 +211,15 @@ datingApp/
 │   │   ├── authService.js
 │   │   ├── matchService.js
 │   │   ├── notificationService.js
+│   │   ├── messageService.js
 │   │   └── socketService.js
 │   └── router/         # Vue router
+├── public/
+│   └── sw.js           # Service worker for push notifications
 ├── tests/              # Test suite
 │   ├── test_api.py     # Auth & Profile tests
 │   ├── test_matching.py # Matching tests
+│   ├── test_messaging.py # Messaging tests
 │   ├── helpers.py      # Test fixtures
 │   └── conftest.py     # Pytest fixtures
 ├── uploads/            # Uploaded files
@@ -241,6 +270,9 @@ Real-time notifications via Socket.IO:
 | `new_match` | Server → Client | Mutual match occurred |
 | `new_like` | Server → Client | Someone liked you |
 | `notification` | Server → Client | General notification |
+| `new_message` | Server → Client | New message received |
+| `user_typing` | Server → Client | User is typing |
+| `message_read` | Server → Client | Message was read |
 
 ## License
 

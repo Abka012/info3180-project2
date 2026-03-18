@@ -28,10 +28,12 @@ def create_app():
     from app import views
     from app import matches
     from app import notifications
+    from app import messages
     
     app.register_blueprint(views.bp)
     app.register_blueprint(matches.bp)
     app.register_blueprint(notifications.bp_notifications)
+    app.register_blueprint(messages.bp_messages)
     
     # Set socket emit function
     from app.matches import set_socket_emit

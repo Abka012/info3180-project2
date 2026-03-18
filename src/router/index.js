@@ -61,6 +61,18 @@ const router = createRouter({
       name: 'notifications',
       component: () => import('../views/NotificationsView.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/conversations',
+      name: 'conversations',
+      component: () => import('../views/ConversationsView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/chat/:userId',
+      name: 'chat',
+      component: () => import('../views/ChatView.vue'),
+      meta: { requiresAuth: true }
     }
   ]
 })
