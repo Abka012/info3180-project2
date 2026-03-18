@@ -2,8 +2,20 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import socketService from './services/socketService'
+import './assets/base.css'
 
 const app = createApp(App)
+
+const initDarkMode = () => {
+  const savedTheme = localStorage.getItem('theme')
+  if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark')
+  } else {
+    document.documentElement.classList.remove('dark')
+  }
+}
+
+initDarkMode()
 
 app.use(router)
 

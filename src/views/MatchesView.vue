@@ -63,71 +63,90 @@ onMounted(loadMatches);
 
 <style scoped>
 .matches-container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 1.5rem;
 }
 
 h1 {
-  color: #e91e63;
-  margin-bottom: 30px;
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #14b8a6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1.5rem;
 }
 
 .loading {
-  text-align: center;
-  padding: 60px;
-  color: #666;
+  text-center: center;
+  padding: 3.75rem;
+  color: #6b7280;
 }
 
 .no-matches {
-  text-align: center;
-  padding: 60px;
+  text-center: center;
+  padding: 3.75rem;
   background: white;
-  border-radius: 12px;
+  dark:bg-gray-800;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .no-matches h3 {
-  color: #333;
-  margin-bottom: 10px;
+  color: #111827;
+  dark:text-white;
+  margin-bottom: 0.5rem;
 }
 
 .no-matches p {
-  color: #666;
-  margin-bottom: 20px;
+  color: #6b7280;
+  dark:text-gray-400;
+  margin-bottom: 1.25rem;
 }
 
 .btn-primary {
   display: inline-block;
-  padding: 14px 30px;
-  background: #e91e63;
+  padding: 0.875rem 1.875rem;
+  background: linear-gradient(to right, #14b8a6, #0d9488);
   color: white;
   text-decoration: none;
-  border-radius: 6px;
+  border-radius: 0.5rem;
   font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
 }
 
 .matches-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
 }
 
 .match-card {
   background: white;
-  border-radius: 12px;
+  dark:bg-gray-800;
+  border-radius: 1rem;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: all 0.3s;
+  cursor: pointer;
 }
 
 .match-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
 .match-image {
   width: 100%;
   height: 200px;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  dark:bg-gray-700;
   display: flex;
   align-items: center;
   justify-content: center;
