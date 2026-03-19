@@ -20,5 +20,18 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['axios', 'vue-router']
+  },
+  test: {
+    globals: true,
+    environment: 'happy-dom',
+    setupFiles: ['./src/test/setup.js'],
+    include: ['src/**/*.{test,spec}.{js,mjs}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'json'],
+      reportsDirectory: './coverage',
+      include: ['src/**/*.{js,vue}'],
+      exclude: ['src/main.js', 'src/App.vue']
+    }
   }
 })

@@ -14,7 +14,7 @@ def create_user(app, email, is_verified=True):
     with app.app_context():
         user = User(
             email=email,
-            password_hash=bcrypt.generate_password_hash('password123').decode('utf-8'),
+            password_hash=bcrypt.generate_password_hash('TestPass123!').decode('utf-8'),
             is_verified=is_verified
         )
         db.session.add(user)
@@ -52,8 +52,10 @@ def get_token(client, email):
     """Get authentication token for a user."""
     response = client.post('/api/auth/login', json={
         'email': email,
-        'password': 'password123'
+        'password': 'TestPass123!'
     })
+    if response.status_code != 200:
+        raise ValueError(f"Login failed for {email}: {response.json}")
     return response.json['token']
 
 

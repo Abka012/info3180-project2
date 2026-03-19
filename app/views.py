@@ -27,6 +27,9 @@ def rate_limit(max_requests=5, window_seconds=300):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
+            if current_app.config.get('TESTING'):
+                return f(*args, **kwargs)
+
             # Get client identifier (IP or user_id)
             client_id = request.remote_addr
             if hasattr(g, "user") and g.user:

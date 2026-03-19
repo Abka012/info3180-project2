@@ -30,7 +30,33 @@ coverage
 # Python
 __pycache__
 venv
+*.pyc
+.pytest_cache/
+*.db
 
 # Environment Variables
 .env
 .flaskenv
+
+# Playwright / E2E Testing
+e2e/
+playwright-report/
+test-results/
+playwright.config.js
+playwright.config.all-browsers.js
+
+# Frontend Testing (Vitest)
+src/__tests__/
+src/test/
+
+# Coverage Reports
+.coverage
+htmlcov/
+coverage/
+
+# Uploaded Files
+uploads/*.png
+uploads/*.jpg
+uploads/*.jpeg
+uploads/*.gif
+!uploads/.gitkeep

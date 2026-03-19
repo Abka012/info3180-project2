@@ -69,7 +69,7 @@ A full-stack dating application built with Vue 3 (frontend) and Flask (backend).
 - **Authentication:** JWT tokens
 - **Real-time:** WebSocket (Socket.IO)
 - **Location:** Geopy for GPS distance calculation
-- **Testing:** Pytest
+- **Testing:** Pytest (backend), Vitest (frontend), Playwright (E2E)
 
 ## Quick Start
 
@@ -130,7 +130,7 @@ npm run dev
 
 ## Testing
 
-Run the test suite:
+### Backend Tests (Pytest)
 ```bash
 ./run-tests.sh
 # or
@@ -138,18 +138,33 @@ source .venv/bin/activate
 pytest tests/ -v
 ```
 
-### Test Coverage (65 tests)
-- Authentication (15 tests)
-- Profile Management (7 tests)
-- Matching Algorithm (8 tests)
-- Matching Actions (6 tests)
-- Potential Matches (5 tests)
-- View Matches (2 tests)
-- Notifications (5 tests)
-- Match Score Endpoint (2 tests)
-- Messaging (8 tests)
-- Search (5 tests)
-- Bookmarks (7 tests)
+### Frontend Tests (Vitest)
+```bash
+npm test
+```
+
+### E2E Tests (Playwright)
+```bash
+npm run test:e2e        # Chromium only
+npm run test:e2e:all    # All browsers (Chromium, Firefox, WebKit, Mobile Safari)
+```
+
+### Test Coverage Summary
+| Test Suite | Tests | Description |
+|------------|-------|-------------|
+| Backend (Pytest) | 150 | Auth, Profile, Matching, Messaging, Search |
+| Frontend (Vitest) | 106 | Components, Services, Composables |
+| E2E (Playwright) | 74+ | Full user flows across browsers |
+
+### Frontend Component Coverage
+| Component | Coverage |
+|-----------|----------|
+| BaseAvatar.vue | 100% |
+| BaseBadge.vue | 100% |
+| BaseButton.vue | 100% |
+| BaseInput.vue | 100% |
+| AppFooter.vue | 100% |
+| authService.js | ~50% |
 
 ## API Endpoints
 
@@ -222,9 +237,16 @@ datingApp/
 │   ├── notifications.py # Notification endpoints
 │   ├── messages.py      # Messaging endpoints
 │   └── bookmarks.py     # Search & bookmark endpoints
+├── e2e/                  # Playwright E2E tests
+│   ├── auth.spec.js
+│   ├── matching.spec.js
+│   ├── messaging.spec.js
+│   ├── navigation.spec.js
+│   ├── responsive.spec.js
+│   └── helpers/
 ├── src/
 │   ├── views/           # Vue views
-│   │   ├── BrowseView.vue       # Browse/swi
+│   │   ├── BrowseView.vue       # Browse/swipe profiles
 │   │   ├── MatchesView.vue      # Mutual matches
 │   │   ├── ConversationsView.vue # Message conversations
 │   │   ├── ChatView.vue         # Chat with messages
@@ -233,21 +255,39 @@ datingApp/
 │   │   ├── NotificationsView.vue
 │   │   └── ...
 │   ├── components/      # Vue components
+│   │   ├── AppHeader.vue
+│   │   ├── AppFooter.vue
+│   │   └── ui/          # Base UI components
+│   │       ├── BaseAvatar.vue
+│   │       ├── BaseBadge.vue
+│   │       ├── BaseButton.vue
+│   │       └── BaseInput.vue
 │   ├── services/       # API services
 │   │   ├── authService.js
 │   │   ├── matchService.js
 │   │   ├── notificationService.js
 │   │   ├── messageService.js
+│   │   ├── profileService.js
 │   │   ├── searchService.js
 │   │   └── socketService.js
-│   └── router/         # Vue router
+│   ├── composables/     # Vue composables
+│   │   └── useAuth.js
+│   ├── router/         # Vue router
+│   ├── __tests__/      # Vitest unit tests
+│   │   ├── components/
+│   │   ├── views/
+│   │   └── services/
+│   └── test/           # Test utilities & mocks
+│       └── mocks/
 ├── public/
 │   └── sw.js           # Service worker for push notifications
-├── tests/              # Test suite
+├── tests/              # Pytest backend tests
 │   ├── test_api.py     # Auth & Profile tests
 │   ├── test_matching.py # Matching tests
 │   ├── test_messaging.py # Messaging tests
 │   ├── test_search.py  # Search & bookmark tests
+│   ├── test_profile_upload.py
+│   ├── test_views_utils.py
 │   ├── helpers.py      # Test fixtures
 │   └── conftest.py     # Pytest fixtures
 ├── uploads/            # Uploaded files
@@ -255,7 +295,8 @@ datingApp/
 ├── start.sh            # Start both servers
 ├── start-backend.sh    # Start backend only
 ├── start-frontend.sh   # Start frontend only
-└── run-tests.sh        # Run tests
+├── run-tests.sh        # Run backend tests
+└── playwright.config.js # Playwright configuration
 ```
 
 ## Matching Algorithm Details

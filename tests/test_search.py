@@ -29,8 +29,8 @@ def client(app):
 def test_user(client, app):
     client.post('/api/auth/register', json={
         'email': 'test@example.com',
-        'password': 'password123',
-        'confirm_password': 'password123'
+        'password': 'TestPass123!',
+        'confirm_password': 'TestPass123!'
     })
     
     with app.app_context():
@@ -41,7 +41,7 @@ def test_user(client, app):
     
     response = client.post('/api/auth/login', json={
         'email': 'test@example.com',
-        'password': 'password123'
+        'password': 'TestPass123!'
     })
     token = response.get_json()['token']
     
@@ -73,7 +73,7 @@ class TestSearch:
         assert response.status_code == 401
 
     def test_search_by_age_range(self, client, test_user, test_profile, app):
-        other_user_id = create_test_user(client, 'other@test.com', 'password123', 'Other User', 30)
+        other_user_id = create_test_user(client, 'other@test.com', 'TestPass123!', 'Other User', 30)
         
         token = test_user['token']
         response = client.post(
@@ -84,7 +84,7 @@ class TestSearch:
         assert response.status_code == 200
 
     def test_search_by_interests(self, client, test_user, test_profile, app):
-        other_user_id = create_test_user(client, 'other@test.com', 'password123', 'Other User', 25, ['music', 'gaming'])
+        other_user_id = create_test_user(client, 'other@test.com', 'TestPass123!', 'Other User', 25, ['music', 'gaming'])
         
         token = test_user['token']
         response = client.post(
@@ -97,7 +97,7 @@ class TestSearch:
         assert len(data) > 0
 
     def test_search_sort_by_newest(self, client, test_user, test_profile, app):
-        create_test_user(client, 'other@test.com', 'password123', 'Other User')
+        create_test_user(client, 'other@test.com', 'TestPass123!', 'Other User')
         
         token = test_user['token']
         response = client.post(
@@ -114,7 +114,7 @@ class TestBookmarks:
         assert response.status_code == 401
 
     def test_add_bookmark(self, client, test_user, test_profile, app):
-        other_user_id = create_test_user(client, 'other@test.com', 'password123', 'Other User')
+        other_user_id = create_test_user(client, 'other@test.com', 'TestPass123!', 'Other User')
         
         token = test_user['token']
         response = client.post(
@@ -124,7 +124,7 @@ class TestBookmarks:
         assert response.status_code == 201
 
     def test_add_duplicate_bookmark(self, client, test_user, test_profile, app):
-        other_user_id = create_test_user(client, 'other@test.com', 'password123', 'Other User')
+        other_user_id = create_test_user(client, 'other@test.com', 'TestPass123!', 'Other User')
         
         token = test_user['token']
         client.post(
@@ -146,7 +146,7 @@ class TestBookmarks:
         assert response.status_code == 400
 
     def test_get_bookmarks(self, client, test_user, test_profile, app):
-        other_user_id = create_test_user(client, 'other@test.com', 'password123', 'Other User')
+        other_user_id = create_test_user(client, 'other@test.com', 'TestPass123!', 'Other User')
         
         token = test_user['token']
         client.post(
@@ -163,7 +163,7 @@ class TestBookmarks:
         assert len(data) > 0
 
     def test_remove_bookmark(self, client, test_user, test_profile, app):
-        other_user_id = create_test_user(client, 'other@test.com', 'password123', 'Other User')
+        other_user_id = create_test_user(client, 'other@test.com', 'TestPass123!', 'Other User')
         
         token = test_user['token']
         client.post(
@@ -178,7 +178,7 @@ class TestBookmarks:
         assert response.status_code == 200
 
     def test_remove_nonexistent_bookmark(self, client, test_user, test_profile, app):
-        other_user_id = create_test_user(client, 'other@test.com', 'password123', 'Other User')
+        other_user_id = create_test_user(client, 'other@test.com', 'TestPass123!', 'Other User')
         
         token = test_user['token']
         response = client.delete(
