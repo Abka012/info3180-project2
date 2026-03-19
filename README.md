@@ -1,5 +1,9 @@
 # DriftDater - Dating Application
 
+![Pytest](https://img.shields.io/badge/Pytest-150%20tests-green)
+![Vitest](https://img.shields.io/badge/Vitest-106%20tests-blue)
+![Playwright](https://img.shields.io/badge/Playwright-74%20tests-purple)
+
 A full-stack dating application built with Vue 3 (frontend) and Flask (backend).
 
 ## Features
@@ -11,21 +15,19 @@ A full-stack dating application built with Vue 3 (frontend) and Flask (backend).
 
 ### Profile Management
 - Create and edit user profiles
-- Profile fields: name, age, bio, location, interests, gender, occupation, relationship goals
-- GPS coordinates for location-based matching
+- Profile fields: name, age, bio, interests, gender, occupation, relationship goals
 - Age preferences (min/max range)
 - Profile picture upload
 - Profile visibility controls (public/private)
 
 ### Matching System
 - **Algorithm** with scoring criteria:
-  - Location proximity (GPS-based) - 25 points
   - Age compatibility - 20 points
   - Shared interests - 20 points (max 2)
   - Relationship goal match - 20 points
   - Gender preference - 15 points
   - **Minimum score: 50 points to appear in matches**
-- Browse potential matches with filters (age, distance)
+- Browse potential matches with filters (age, interests)
 - Like/Dislike/Pass functionality
 - Mutual match detection
 - Real-time match notifications
@@ -43,17 +45,15 @@ A full-stack dating application built with Vue 3 (frontend) and Flask (backend).
 - Read receipts (✓ = sent, ✓✓ = read)
 - Message limit: 1000 characters
 - Automatic message cleanup after 90 days
-- Push notifications for background messages
 
 ### Search & Discovery
 - Search profiles by:
-  - Location (city/area)
   - Age range
   - Interests
   - Gender
   - Relationship goal
   - Occupation
-- Sort options: newest, oldest, most similar, nearest, age
+- Sort options: newest, oldest, most similar, age
 - Filter applied matches
 - Save favorite/bookmarked profiles
 - View and manage favorites
@@ -68,7 +68,6 @@ A full-stack dating application built with Vue 3 (frontend) and Flask (backend).
 - **Database:** SQLite (development) / PostgreSQL (production)
 - **Authentication:** JWT tokens
 - **Real-time:** WebSocket (Socket.IO)
-- **Location:** Geopy for GPS distance calculation
 - **Testing:** Pytest (backend), Vitest (frontend), Playwright (E2E)
 
 ## Quick Start
@@ -150,6 +149,7 @@ npm run test:e2e:all    # All browsers (Chromium, Firefox, WebKit, Mobile Safari
 ```
 
 ### Test Coverage Summary
+
 | Test Suite | Tests | Description |
 |------------|-------|-------------|
 | Backend (Pytest) | 150 | Auth, Profile, Matching, Messaging, Search |
@@ -157,6 +157,7 @@ npm run test:e2e:all    # All browsers (Chromium, Firefox, WebKit, Mobile Safari
 | E2E (Playwright) | 74+ | Full user flows across browsers |
 
 ### Frontend Component Coverage
+
 | Component | Coverage |
 |-----------|----------|
 | BaseAvatar.vue | 100% |
@@ -165,6 +166,22 @@ npm run test:e2e:all    # All browsers (Chromium, Firefox, WebKit, Mobile Safari
 | BaseInput.vue | 100% |
 | AppFooter.vue | 100% |
 | authService.js | ~50% |
+
+### E2E Browser Support
+
+| Browser | Status | Tests |
+|---------|--------|-------|
+| Chromium | ✅ Passing | 37 |
+| Firefox | ✅ Passing | 37 |
+| WebKit | ⏳ Needs deps | - |
+| Mobile Safari | ⏳ Needs deps | - |
+
+**Note:** WebKit and Mobile Safari require system dependencies:
+```bash
+sudo npx playwright install-deps
+# or
+sudo apt-get install libicu74 libjpeg-turbo8 gstreamer1.0-libav
+```
 
 ## API Endpoints
 
@@ -262,7 +279,7 @@ datingApp/
 │   │       ├── BaseBadge.vue
 │   │       ├── BaseButton.vue
 │   │       └── BaseInput.vue
-│   ├── services/       # API services
+│   ├── services/        # API services
 │   │   ├── authService.js
 │   │   ├── matchService.js
 │   │   ├── notificationService.js
@@ -272,30 +289,30 @@ datingApp/
 │   │   └── socketService.js
 │   ├── composables/     # Vue composables
 │   │   └── useAuth.js
-│   ├── router/         # Vue router
-│   ├── __tests__/      # Vitest unit tests
+│   ├── router/          # Vue router
+│   ├── __tests__/       # Vitest unit tests
 │   │   ├── components/
 │   │   ├── views/
 │   │   └── services/
-│   └── test/           # Test utilities & mocks
+│   └── test/            # Test utilities & mocks
 │       └── mocks/
 ├── public/
-│   └── sw.js           # Service worker for push notifications
-├── tests/              # Pytest backend tests
-│   ├── test_api.py     # Auth & Profile tests
-│   ├── test_matching.py # Matching tests
+│   └── sw.js            # Service worker for push notifications
+├── tests/               # Pytest backend tests
+│   ├── test_api.py      # Auth & Profile tests
+│   ├── test_matching.py  # Matching tests
 │   ├── test_messaging.py # Messaging tests
-│   ├── test_search.py  # Search & bookmark tests
+│   ├── test_search.py    # Search & bookmark tests
 │   ├── test_profile_upload.py
 │   ├── test_views_utils.py
-│   ├── helpers.py      # Test fixtures
-│   └── conftest.py     # Pytest fixtures
-├── uploads/            # Uploaded files
-├── run.py              # Flask entry point
-├── start.sh            # Start both servers
-├── start-backend.sh    # Start backend only
-├── start-frontend.sh   # Start frontend only
-├── run-tests.sh        # Run backend tests
+│   ├── helpers.py        # Test fixtures
+│   └── conftest.py       # Pytest fixtures
+├── uploads/             # Uploaded files
+├── run.py               # Flask entry point
+├── start.sh             # Start both servers
+├── start-backend.sh     # Start backend only
+├── start-frontend.sh    # Start frontend only
+├── run-tests.sh         # Run backend tests
 └── playwright.config.js # Playwright configuration
 ```
 
@@ -305,7 +322,6 @@ The matching score is calculated based on:
 
 | Criterion | Max Points | Description |
 |-----------|------------|-------------|
-| Location | 25 | GPS distance within preferred radius |
 | Age | 20 | Within user's preferred age range |
 | Interests | 20 | Shared interests (+10 each, max 2) |
 | Relationship Goal | 20 | Same relationship goal |
@@ -342,6 +358,44 @@ Real-time notifications via Socket.IO:
 | `new_message` | Server → Client | New message received |
 | `user_typing` | Server → Client | User is typing |
 | `message_read` | Server → Client | Message was read |
+
+## Troubleshooting
+
+### WebKit/Safari E2E Tests Not Running
+WebKit requires system dependencies. Install them with:
+```bash
+sudo npx playwright install-deps
+```
+Or manually:
+```bash
+sudo apt-get install libicu74 libjpeg-turbo8 gstreamer1.0-libav
+```
+
+### Database Reset
+To reset the database, delete the SQLite file:
+```bash
+rm instance/driftdater.db
+```
+Then restart the backend to recreate it.
+
+### Mailtrap Not Receiving Emails
+1. Check your `.env` file has correct credentials
+2. Verify Mailtrap inbox is active
+3. Check spam/junk folders
+
+### Frontend Tests Failing
+Ensure all dependencies are installed:
+```bash
+npm install
+npm test
+```
+
+### Backend Tests Failing
+Ensure Python environment is activated:
+```bash
+source .venv/bin/activate
+pytest tests/ -v
+```
 
 ## License
 
