@@ -173,8 +173,8 @@ npm run test:e2e:all    # All browsers (Chromium, Firefox, WebKit, Mobile Safari
 |---------|--------|-------|
 | Chromium | ✅ Passing | 37 |
 | Firefox | ✅ Passing | 37 |
-| WebKit | ⏳ Needs deps | - |
-| Mobile Safari | ⏳ Needs deps | - |
+| WebKit | ✅ Passing | 37 |
+| Mobile Safari | ✅ Passing | 37 |
 
 **Note:** WebKit and Mobile Safari require system dependencies:
 ```bash
