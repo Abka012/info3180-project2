@@ -396,7 +396,3 @@ Ensure Python environment is activated:
 source .venv/bin/activate
 pytest tests/ -v
 ```
-
-## License
-
-MIT
