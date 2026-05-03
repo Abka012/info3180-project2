@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Import actual functions to test
@@ -56,13 +55,13 @@ describe('authService - passwordValidation', () => {
     })
 
     it('returns false when missing special character', () => {
-      const result = passwordValidation.validate('NoSpecial123')
+      const result = passwordValidation.validate('mockPassword123')
       expect(result.isValid).toBe(false)
       expect(result.errors).toContain('Password must contain at least one special character')
     })
 
     it('returns strength in result', () => {
-      const result = passwordValidation.validate('Test123!')
+      const result = passwordValidation.validate('mock_Password123!')
       expect(result.strength).toBeDefined()
       expect(['weak', 'medium', 'strong']).toContain(result.strength)
     })
