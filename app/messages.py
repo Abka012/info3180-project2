@@ -21,6 +21,7 @@ def check_match_exists(user1_id, user2_id):
 
 
 def get_socket_emit():
+    """Return a WebSocket emit function, or a no-op if unavailable (e.g. in tests)."""
     try:
         from app import socketio
 
