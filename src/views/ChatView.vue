@@ -242,7 +242,7 @@ const formatTime = (dateString) => {
 };
 
 const goBack = () => {
-  router.push("/conversations");
+  router.push("/messages");
 };
 
 onMounted(() => {
