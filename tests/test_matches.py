@@ -1,5 +1,7 @@
 import sys
 import os
+import pytest
+from app import db
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -8,7 +10,7 @@ class TestGetPotentialMatches:
     """Test getting potential matches."""
 
     def test_get_potential_matches_success(
-        self, client, user_with_profile, second_user_with_profile
+        self, client, user_with_profile, second_user
     ):
         """Should return potential matches."""
         response = client.get(
@@ -31,12 +33,12 @@ class TestGetPotentialMatches:
             assert match["user_id"] != user_with_profile["user_id"]
 
     def test_get_potential_matches_excludes_liked_users(
-        self, client, user_with_profile, second_user_with_profile
+        self, client, user_with_profile, second_user
     ):
         """Already liked users should not appear in potential matches."""
         # Like user2 first
         client.post(
-            f'/api/matches/like/{second_user_with_profile["user_id"]}',
+            f'/api/matches/like/{second_user["user_id"]}',
             headers={"Authorization": f'Bearer {user_with_profile["token"]}'},
         )
 
@@ -65,15 +67,19 @@ class TestGetPotentialMatches:
 
         assert response.status_code == 401
 
-    def test_get_potential_matches_no_profile(self, client, verified_user):
+    def test_get_potential_matches_no_profile(self, client, app, verified_user):
         """Should return 400 if user has no profile."""
+        with app.app_context():
+            from app.models import Profile
+            Profile.query.filter_by(user_id=verified_user["user_id"]).delete()
+            db.session.commit()
+
         response = client.get(
             "/api/matches/potential",
             headers={"Authorization": f'Bearer {verified_user["token"]}'},
         )
 
         assert response.status_code == 400
-
 
 class TestGetMatches:
     """Test getting mutual matches."""
@@ -110,17 +116,17 @@ class TestGetMatches:
 class TestMatchScore:
     """Test match score calculation."""
 
-    def test_get_match_score(self, client, user_with_profile, second_user_with_profile):
+    def test_get_match_score(self, client, user_with_profile, second_user):
         """Should return match score for a user."""
         response = client.get(
-            f'/api/matches/score/{second_user_with_profile["user_id"]}',
+            f'/api/matches/score/{second_user["user_id"]}',
             headers={"Authorization": f'Bearer {user_with_profile["token"]}'},
         )
 
         assert response.status_code == 200
         assert "score" in response.json
         assert "details" in response.json
-        assert response.json["to_user_id"] == second_user_with_profile["user_id"]
+        assert response.json["to_user_id"] == second_user["user_id"]
 
     def test_get_match_score_nonexistent_user(self, client, user_with_profile):
         """Should return 404 for non-existent user."""
@@ -141,11 +147,11 @@ class TestMatchScore:
         assert response.status_code in [200, 400]
 
     def test_match_score_includes_details(
-        self, client, user_with_profile, second_user_with_profile
+        self, client, user_with_profile, second_user
     ):
         """Match score should include scoring details."""
         response = client.get(
-            f'/api/matches/score/{second_user_with_profile["user_id"]}',
+            f'/api/matches/score/{second_user["user_id"]}',
             headers={"Authorization": f'Bearer {user_with_profile["token"]}'},
         )
 
@@ -158,7 +164,7 @@ class TestMatchFilters:
     """Test match filtering functionality."""
 
     def test_filter_by_age_min(
-        self, client, user_with_profile, second_user_with_profile
+        self, client, user_with_profile, second_user
     ):
         """Should filter by minimum age."""
         response = client.get(
@@ -171,7 +177,7 @@ class TestMatchFilters:
             assert match["age"] >= 30
 
     def test_filter_by_age_max(
-        self, client, user_with_profile, second_user_with_profile
+        self, client, user_with_profile, second_user
     ):
         """Should filter by maximum age."""
         response = client.get(
@@ -184,7 +190,7 @@ class TestMatchFilters:
             assert match["age"] <= 20
 
     def test_filter_by_interests(
-        self, client, user_with_profile, second_user_with_profile
+        self, client, user_with_profile, second_user
     ):
         """Should filter by shared interests."""
         response = client.get(
@@ -199,11 +205,11 @@ class TestMatchAlgorithm:
     """Test the match scoring algorithm."""
 
     def test_match_score_with_compatible_age(
-        self, client, user_with_profile, second_user_with_profile
+        self, client, user_with_profile, second_user
     ):
         """Should give points for compatible age."""
         response = client.get(
-            f'/api/matches/score/{second_user_with_profile["user_id"]}',
+            f'/api/matches/score/{second_user["user_id"]}',
             headers={"Authorization": f'Bearer {user_with_profile["token"]}'},
         )
 
@@ -211,11 +217,11 @@ class TestMatchAlgorithm:
         assert response.json["score"] >= 0
 
     def test_match_score_with_shared_interests(
-        self, client, user_with_profile, second_user_with_profile
+        self, client, user_with_profile, second_user
     ):
         """Should give points for shared interests."""
         response = client.get(
-            f'/api/matches/score/{second_user_with_profile["user_id"]}',
+            f'/api/matches/score/{second_user["user_id"]}',
             headers={"Authorization": f'Bearer {user_with_profile["token"]}'},
         )
 
@@ -224,11 +230,11 @@ class TestMatchAlgorithm:
         assert "shared_interests" in details or "interests_score" in details
 
     def test_match_score_with_matching_goal(
-        self, client, user_with_profile, second_user_with_profile
+        self, client, user_with_profile, second_user
     ):
         """Should give points for matching relationship goals."""
         response = client.get(
-            f'/api/matches/score/{second_user_with_profile["user_id"]}',
+            f'/api/matches/score/{second_user["user_id"]}',
             headers={"Authorization": f'Bearer {user_with_profile["token"]}'},
         )
 
@@ -237,11 +243,11 @@ class TestMatchAlgorithm:
         assert "goal_match" in details or "relationship_score" in details
 
     def test_match_score_gender_preference(
-        self, client, user_with_profile, second_user_with_profile
+        self, client, user_with_profile, second_user
     ):
         """Should respect gender preferences."""
         response = client.get(
-            f'/api/matches/score/{second_user_with_profile["user_id"]}',
+            f'/api/matches/score/{second_user["user_id"]}',
             headers={"Authorization": f'Bearer {user_with_profile["token"]}'},
         )
 

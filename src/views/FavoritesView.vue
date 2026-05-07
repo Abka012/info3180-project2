@@ -38,7 +38,7 @@
           <div class="profile-image">
             <img
               v-if="profile.profile_picture"
-              :src="`http://localhost:5000/uploads/${profile.profile_picture}`"
+              :src="`${API_BASE_URL}/uploads/${profile.profile_picture}`"
               alt="Profile"
             />
             <div v-else class="avatar-placeholder">
@@ -115,6 +115,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import searchService from "../services/searchService";
+import { API_BASE_URL } from "../services/api";
 
 const favorites = ref([]);
 const loading = ref(true);

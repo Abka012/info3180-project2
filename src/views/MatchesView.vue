@@ -17,7 +17,8 @@
         <div class="match-image">
           <img
             v-if="match.profile.profile_picture"
-            :src="`http://localhost:5000/uploads/${match.profile.profile_picture}`"
+            :src="`${API_BASE_URL}/uploads/${match.profile.profile_picture}`"
+
             alt="Profile"
           />
           <div v-else class="avatar-placeholder">
@@ -37,6 +38,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import matchService from "../services/matchService";
+import { API_BASE_URL } from "../services/api";
 
 const matches = ref([]);
 const loading = ref(true);

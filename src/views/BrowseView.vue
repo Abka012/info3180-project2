@@ -39,7 +39,7 @@
       <div class="profile-image">
         <img
           v-if="currentProfile.profile_picture"
-          :src="`http://localhost:5000/uploads/${currentProfile.profile_picture}`"
+          :src="`${API_BASE_URL}/uploads/${currentProfile.profile_picture}`"
           alt="Profile"
         />
         <div v-else class="avatar-placeholder">
@@ -150,6 +150,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import matchService from "../services/matchService";
+import { API_BASE_URL } from "../services/api";
 
 const profiles = ref([]);
 const currentIndex = ref(0);

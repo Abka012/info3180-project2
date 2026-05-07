@@ -87,12 +87,15 @@ def create_profile():
         f"[PROFILE_CREATE] User authenticated: user_id={user.user_id}, email={user.email}"
     )
 
-    existing = Profile.query.filter_by(user_id=user.user_id).first()
-    if existing:
-        current_app.logger.warning(
-            f"[PROFILE_CREATE] Profile already exists for user_id={user.user_id}"
-        )
-        return jsonify({"error": "Profile already exists"}), 400
+    profile = Profile.query.filter_by(user_id=user.user_id).first()
+    is_new = False
+    if not profile:
+        profile = Profile(user_id=user.user_id)
+        db.session.add(profile)
+        is_new = True
+        current_app.logger.info(f"[PROFILE_CREATE] Creating new profile for user_id={user.user_id}")
+    else:
+        current_app.logger.info(f"[PROFILE_CREATE] Updating existing profile for user_id={user.user_id}")
 
     data = request.get_json()
     if not data:
@@ -111,30 +114,28 @@ def create_profile():
         interests = interests
 
     current_app.logger.info(
-        f"[PROFILE_CREATE] Creating profile with name={data['name']}, age={data['age']}"
+        f"[PROFILE_CREATE] Saving profile with name={data['name']}, age={data['age']}"
     )
 
-    profile = Profile(
-        user_id=user.user_id,
-        name=data["name"],
-        age=data["age"],
-        bio=data.get("bio", ""),
-        interests=interests,
-        gender=data.get("gender", ""),
-        gender_preference=data.get("gender_preference", "all"),
-        relationship_goal=data.get("relationship_goal", ""),
-        occupation=data.get("occupation", ""),
-        visibility=data.get("visibility", True),
-    )
-
-    current_app.logger.info("[PROFILE_CREATE] Adding to session and committing...")
-    db.session.add(profile)
+    profile.name = data["name"]
+    profile.age = data["age"]
+    profile.bio = data.get("bio", "")
+    profile.interests = interests
+    profile.gender = data.get("gender", "")
+    profile.gender_preference = data.get("gender_preference", "all")
+    profile.relationship_goal = data.get("relationship_goal", "")
+    profile.occupation = data.get("occupation", "")
+    profile.visibility = data.get("visibility", True)
 
     try:
+        current_app.logger.info("[PROFILE_CREATE] Committing changes...")
         db.session.commit()
         current_app.logger.info(
-            f"[PROFILE_CREATE] SUCCESS - Profile created: profile_id={profile.profile_id}, user_id={user.user_id}"
+            f"[PROFILE_CREATE] SUCCESS - Profile {'created' if is_new else 'updated'} for user_id={user.user_id}"
         )
+
+        return jsonify(profile.to_dict()), 201
+
     except Exception as e:
         current_app.logger.error(
             f"[PROFILE_CREATE] FAILED to commit: {type(e).__name__}: {e}"
@@ -142,8 +143,6 @@ def create_profile():
         current_app.logger.exception("[PROFILE_CREATE] Full exception traceback:")
         db.session.rollback()
         return jsonify({"error": f"Failed to create profile: {str(e)}"}), 500
-
-    return jsonify(profile.to_dict()), 201
 
 
 @bp.route("", methods=["GET"])
@@ -311,13 +310,18 @@ def upload_picture():
     import uuid
 
     filename = f"{uuid.uuid4()}{ext}"
-    upload_folder = current_app.config.get("UPLOAD_FOLDER", "./uploads")
-    if not os.path.isabs(upload_folder):
-        upload_folder = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), upload_folder
-        )
-    os.makedirs(upload_folder, exist_ok=True)
-    filepath = os.path.join(upload_folder, filename)
+    profile_pics_folder = current_app.config.get("PROFILE_PICS_FOLDER")
+    if not profile_pics_folder:
+        # Fallback if config is missing (should not happen with our changes)
+        upload_folder = current_app.config.get("UPLOAD_FOLDER", "./uploads")
+        if not os.path.isabs(upload_folder):
+            upload_folder = os.path.join(
+                os.path.dirname(os.path.dirname(__file__)), upload_folder
+            )
+        profile_pics_folder = os.path.join(upload_folder, "profile_pics")
+    
+    os.makedirs(profile_pics_folder, exist_ok=True)
+    filepath = os.path.join(profile_pics_folder, filename)
     file.save(filepath)
 
     profile.profile_picture = filename
