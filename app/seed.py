@@ -1,4 +1,3 @@
-import argparse
 import os
 import random
 import sys
@@ -144,33 +143,61 @@ def seed(screenshot_mode=False):
         # Message templates for conversations
         conversation_templates = {
             (1, 2): [
-                ("Hey Jordan! I saw you've traveled to 30 countries — that's amazing! 🌍 What's your favorite place so far?"),
-                ("Thanks Alex! 😊 Probably Bali — the culture and nature are incredible. Have you traveled much?"),
-                ("I've done some hiking trips in the Rockies! Would love to hear more about your yoga journey sometime 🧘"),
-                ("I'd love that! Maybe we could grab coffee and swap travel stories? ☕"),
+                (
+                    "Hey Jordan! I saw you've traveled to 30 countries — that's amazing! 🌍 What's your favorite place so far?"
+                ),
+                (
+                    "Thanks Alex! 😊 Probably Bali — the culture and nature are incredible. Have you traveled much?"
+                ),
+                (
+                    "I've done some hiking trips in the Rockies! Would love to hear more about your yoga journey sometime 🧘"
+                ),
+                (
+                    "I'd love that! Maybe we could grab coffee and swap travel stories? ☕"
+                ),
             ],
             (1, 3): [
-                ("Hey Taylor! Your bio made me laugh — kimchi fried rice sounds delicious! 🍳 Do you have a recipe?"),
-                ("Haha thanks! I might share it... if you tell me about your photography hobby first 📸"),
-                ("Deal! I mostly shoot landscapes. Here's one from my last hike: [photo]"),
+                (
+                    "Hey Taylor! Your bio made me laugh — kimchi fried rice sounds delicious! 🍳 Do you have a recipe?"
+                ),
+                (
+                    "Haha thanks! I might share it... if you tell me about your photography hobby first 📸"
+                ),
+                (
+                    "Deal! I mostly shoot landscapes. Here's one from my last hike: [photo]"
+                ),
                 ("Wow, that's stunning! You're talented 😍"),
             ],
             (2, 4): [
-                ("Hey Chris! Your marathon times are impressive! What's your training routine?"),
+                (
+                    "Hey Chris! Your marathon times are impressive! What's your training routine?"
+                ),
                 ("Thanks Jordan! I run 5 days a week. What yoga style do you teach?"),
-                ("I teach vinyasa flow mostly. Would love to try running sometime! 🧘‍♀️🏃"),
-                ("Let's do it! There's a great 5k trail near here. We could go together!"),
+                (
+                    "I teach vinyasa flow mostly. Would love to try running sometime! 🧘‍♀️🏃"
+                ),
+                (
+                    "Let's do it! There's a great 5k trail near here. We could go together!"
+                ),
             ],
             (3, 5): [
                 ("Hey Sam! Love your street art passion. What's your favorite style?"),
-                ("Thanks Taylor! I'm really into muralism and graffiti art. Do you produce music?"),
+                (
+                    "Thanks Taylor! I'm really into muralism and graffiti art. Do you produce music?"
+                ),
                 ("Yeah! I make electronic music. We should collaborate sometime 🎵🎨"),
                 ("That sounds amazing! Let's definitely do that."),
             ],
             (4, 5): [
-                ("Hey Sam! Your graphic design work is really cool. What's your design philosophy?"),
-                ("Thanks Chris! I believe good design should be accessible and authentic. How do you stay motivated for marathons?"),
-                ("I set small goals and celebrate each milestone. Same approach to anything in life!"),
+                (
+                    "Hey Sam! Your graphic design work is really cool. What's your design philosophy?"
+                ),
+                (
+                    "Thanks Chris! I believe good design should be accessible and authentic. How do you stay motivated for marathons?"
+                ),
+                (
+                    "I set small goals and celebrate each milestone. Same approach to anything in life!"
+                ),
                 ("Love that mindset! We should grab coffee and talk more ☕"),
             ],
         }
@@ -181,8 +208,12 @@ def seed(screenshot_mode=False):
             user2 = users[u2 - 1]
 
             # Create mutual likes
-            like1 = Like(from_user_id=user1.user_id, to_user_id=user2.user_id, status="liked")
-            like2 = Like(from_user_id=user2.user_id, to_user_id=user1.user_id, status="liked")
+            like1 = Like(
+                from_user_id=user1.user_id, to_user_id=user2.user_id, status="liked"
+            )
+            like2 = Like(
+                from_user_id=user2.user_id, to_user_id=user1.user_id, status="liked"
+            )
             db.session.add_all([like1, like2])
 
             # Create match
@@ -191,12 +222,15 @@ def seed(screenshot_mode=False):
 
             # Create messages (use template or generate generic ones)
             key = (u1, u2) if u1 < u2 else (u2, u1)
-            messages = conversation_templates.get(key, [
-                "Hey! How's it going? 😊",
-                "I saw we matched! Tell me about yourself.",
-                "What's your favorite thing to do on weekends?",
-                "Would you like to grab coffee sometime?",
-            ])
+            messages = conversation_templates.get(
+                key,
+                [
+                    "Hey! How's it going? 😊",
+                    "I saw we matched! Tell me about yourself.",
+                    "What's your favorite thing to do on weekends?",
+                    "Would you like to grab coffee sometime?",
+                ],
+            )
 
             for idx, content in enumerate(messages):
                 sender = user1 if idx % 2 == 0 else user2
@@ -209,8 +243,12 @@ def seed(screenshot_mode=False):
                 db.session.add(message)
 
             # Create bookmarks (each user bookmarks the other)
-            bookmark1 = Bookmark(user_id=user1.user_id, bookmarked_user_id=user2.user_id)
-            bookmark2 = Bookmark(user_id=user2.user_id, bookmarked_user_id=user1.user_id)
+            bookmark1 = Bookmark(
+                user_id=user1.user_id, bookmarked_user_id=user2.user_id
+            )
+            bookmark2 = Bookmark(
+                user_id=user2.user_id, bookmarked_user_id=user1.user_id
+            )
             db.session.add_all([bookmark1, bookmark2])
 
             # Create notifications for each user
