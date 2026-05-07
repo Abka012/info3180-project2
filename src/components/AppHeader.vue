@@ -19,6 +19,7 @@
         </router-link>
 
         <!-- Desktop Navigation -->
+        <ThemeToggle />
         <div class="hidden md:flex items-center space-x-1">
           <template v-if="isAuthenticated">
             <router-link
@@ -740,6 +741,7 @@ import notificationService from "../services/notificationService";
 import messageService from "../services/messageService";
 import socketService from "../services/socketService";
 import { useAuth } from "../composables/useAuth";
+import ThemeToggle from '@/components/ThemeToggle.vue'
 
 const router = useRouter();
 const { isAuthenticated, logout: authLogout } = useAuth();

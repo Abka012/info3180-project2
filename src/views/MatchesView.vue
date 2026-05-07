@@ -94,7 +94,7 @@ h1 {
 .no-matches {
   text-center: center;
   padding: 3.75rem;
-  background: white;
+  background: rgb(148, 148, 148);
   dark: bg-gray-800;
   border-radius: 1rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);

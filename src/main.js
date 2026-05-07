@@ -24,12 +24,11 @@ const initDarkMode = () => {
 
   if (savedTheme === "dark") {
     document.documentElement.classList.add("dark");
-  } else if (savedTheme === "light") {
-    document.documentElement.classList.remove("dark");
+  } else if (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    // No saved preference — fall back to system setting
+    document.documentElement.classList.add("dark");
   } else {
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      document.documentElement.classList.add("dark");
-    }
+    document.documentElement.classList.remove("dark");
   }
 };
 
@@ -41,14 +40,14 @@ initDarkMode();
  * Updates the dark mode setting when the system preference changes,
  * but only if the user hasn't explicitly set a theme preference.
  */
-window
-  .matchMedia("(prefers-color-scheme: dark)")
-  .addEventListener("change", (e) => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "system" || !savedTheme) {
-      document.documentElement.classList.toggle("dark", e.matches);
-    }
-  });
+// window
+//   .matchMedia("(prefers-color-scheme: dark)")
+//   .addEventListener("change", (e) => {
+//     const savedTheme = localStorage.getItem("theme");
+//     if (savedTheme === "system" || !savedTheme) {
+//       document.documentElement.classList.toggle("dark", e.matches);
+//     }
+//   });
 
 app.use(router);
 

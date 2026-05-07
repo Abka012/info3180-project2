@@ -258,7 +258,7 @@ onMounted(() => {
 }
 
 .profile-card {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(221, 226, 231, 0.8);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(20, 184, 166, 0.1);
   border-radius: 1rem;
@@ -268,7 +268,7 @@ onMounted(() => {
 }
 
 :global(.dark) .profile-card {
-  background: rgba(31, 41, 55, 0.8);
+  background: rgba(255, 255, 255, 0.8);
   border-color: rgba(139, 92, 246, 0.15);
 }
 

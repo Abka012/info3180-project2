@@ -294,14 +294,14 @@ onUnmounted(() => {
 .no-conversations {
   text-align: center;
   padding: 4rem 2rem;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(31, 41, 55, 0.5);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(20, 184, 166, 0.1);
   border-radius: 1rem;
 }
 
 :global(.dark) .no-conversations {
-  background: rgba(31, 41, 55, 0.5);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .no-conversations-icon {
@@ -310,21 +310,21 @@ onUnmounted(() => {
 }
 
 .no-conversations h3 {
-  color: #374151;
+  color: #9ca3af;
   margin-bottom: 0.5rem;
 }
 
 :global(.dark) .no-conversations h3 {
-  color: #f3f4f6;
+  color: #6b7280;
 }
 
 .no-conversations p {
-  color: #6b7280;
+  color: #f3f4f6;
   margin-bottom: 1.5rem;
 }
 
 :global(.dark) .no-conversations p {
-  color: #9ca3af;
+  color: #374151;
 }
 
 .btn-primary {

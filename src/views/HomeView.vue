@@ -152,7 +152,7 @@
       </section>
 
       <!-- Features Section -->
-      <section class="py-20 bg-white dark:bg-gray-900">
+      <section class="py-20 bg-gray-900 dark:bg-white ">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="text-center mb-16">
             <h2
@@ -532,7 +532,7 @@
                   </span>
                 </div>
                 <div
-                  class="text-4xl font-bold text-gray-900 dark:text-white mb-1"
+                  class="text-4xl font-bold text-gray-900"
                 >
                   {{ stats.newMatches }}
                 </div>
@@ -573,7 +573,7 @@
                   </span>
                 </div>
                 <div
-                  class="text-4xl font-bold text-gray-900 dark:text-white mb-1"
+                  class="text-4xl font-bold text-gray-900"
                 >
                   {{ stats.pendingLikes }}
                 </div>
@@ -615,7 +615,7 @@
                   </span>
                 </div>
                 <div
-                  class="text-4xl font-bold text-gray-900 dark:text-white mb-1"
+                  class="text-4xl font-bold text-gray-900"
                 >
                   {{ stats.unreadMessages }}
                 </div>
@@ -656,7 +656,7 @@
                   </span>
                 </div>
                 <div
-                  class="text-4xl font-bold text-gray-900 dark:text-white mb-1"
+                  class="text-4xl font-bold text-gray-900"
                 >
                   {{ stats.totalMatches }}
                 </div>
@@ -701,7 +701,7 @@
                       </svg>
                     </div>
                     <div>
-                      <div class="font-medium text-gray-900 dark:text-white">
+                      <div class="font-medium text-gray-900">
                         Browse Profiles
                       </div>
                       <div class="text-xs text-gray-500 dark:text-gray-400">
@@ -729,7 +729,7 @@
                       </svg>
                     </div>
                     <div>
-                      <div class="font-medium text-gray-900 dark:text-white">
+                      <div class="font-medium text-gray-900">
                         Advanced Search
                       </div>
                       <div class="text-xs text-gray-500 dark:text-gray-400">
@@ -758,7 +758,7 @@
                       </svg>
                     </div>
                     <div>
-                      <div class="font-medium text-gray-900 dark:text-white">
+                      <div class="font-medium text-gray-900">
                         Favorites
                       </div>
                       <div class="text-xs text-gray-500 dark:text-gray-400">
@@ -786,7 +786,7 @@
                       </svg>
                     </div>
                     <div>
-                      <div class="font-medium text-gray-900 dark:text-white">
+                      <div class="font-medium text-gray-900">
                         Edit Profile
                       </div>
                       <div class="text-xs text-gray-500 dark:text-gray-400">
@@ -938,6 +938,7 @@ import authService from "../services/authService";
 import profileService from "../services/profileService";
 import matchService from "../services/matchService";
 import { useAuth } from "../composables/useAuth";
+import ThemeToggle from '@/components/ThemeToggle.vue'
 
 const { isAuthenticated, user: currentUser } = useAuth();
 const hasProfile = ref(false);
