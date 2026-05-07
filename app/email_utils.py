@@ -2,7 +2,7 @@ import smtplib
 import time
 import json
 from email.message import EmailMessage
-from urllib.error import HTTPError, URLError
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 from flask import current_app
@@ -35,27 +35,18 @@ def _send_resend_email(to_email, subject, body):
     )
 
     if not api_key:
-        current_app.logger.error(
-            "[EMAIL ERROR] RESEND_API_KEY is not configured in production environment"
-        )
-        current_app.logger.error(
-            f"[EMAIL ERROR] Available env vars: RESEND_API_KEY={'***' if api_key else 'NOT SET'}, RESEND_API_URL={api_url}, EMAIL_FROM={from_email}"
-        )
+        current_app.logger.error("[EMAIL ERROR] RESEND_API_KEY is not configured")
         return False
 
     if not from_email:
         current_app.logger.error(
-            "[EMAIL ERROR] EMAIL_FROM is not configured in production environment"
-        )
-        current_app.logger.error(
-            "[EMAIL ERROR] EMAIL_FROM is required for Resend - must be a verified sender domain in Resend dashboard"
+            "[EMAIL ERROR] EMAIL_FROM is not configured. Resend requires a verified sender."
         )
         return False
 
-    current_app.logger.info("[EMAIL] Preparing to send email via Resend API")
-    current_app.logger.info(f"[EMAIL] To: {to_email}")
-    current_app.logger.info(f"[EMAIL] Subject: {subject}")
-    current_app.logger.info(f"[EMAIL] From: {from_email}")
+    current_app.logger.info(
+        f"[EMAIL] Preparing to send via Resend: {to_email} (Subject: {subject})"
+    )
 
     payload = json.dumps(
         {
@@ -65,8 +56,6 @@ def _send_resend_email(to_email, subject, body):
             "html": body,
         }
     ).encode("utf-8")
-
-    current_app.logger.debug(f"[EMAIL] Full payload: {payload.decode('utf-8')}")
 
     request = Request(
         api_url,
@@ -80,50 +69,29 @@ def _send_resend_email(to_email, subject, body):
     )
 
     try:
-        current_app.logger.info(
-            f"[EMAIL] Sending POST request to Resend API: {api_url}"
+        current_app.logger.debug(
+            f"[EMAIL] Resend Payload: {payload.decode('utf-8')[:500]}..."
         )
         with urlopen(request, timeout=30) as response:
             response_body = response.read().decode("utf-8")
             current_app.logger.info(
-                f"[EMAIL] Resend API response status: {response.status}"
-            )
-            current_app.logger.info(
-                f"[EMAIL] Resend API response body: {response_body}"
+                f"[EMAIL] Resend Response: Status={response.status}, Body={response_body}"
             )
 
             if 200 <= response.status < 300:
-                current_app.logger.info(
-                    f"[EMAIL] SUCCESS - Email sent successfully to {to_email}"
-                )
                 return True
 
-            current_app.logger.error(
-                f"[EMAIL ERROR] Resend API returned status {response.status}: {response_body}"
-            )
             return False
     except HTTPError as exc:
         error_body = exc.read().decode("utf-8", errors="replace")
         current_app.logger.error(
-            f"[EMAIL ERROR] Resend HTTP error: status={exc.code}, reason={exc.reason}, body={error_body}"
-        )
-        current_app.logger.error(
-            "[EMAIL ERROR] This usually means: 1) Sender email not verified in Resend, 2) API key is invalid, 3) Rate limit exceeded"
-        )
-        return False
-    except URLError as exc:
-        current_app.logger.error(
-            f"[EMAIL ERROR] Network error reaching Resend API: {exc.reason}"
-        )
-        current_app.logger.error(
-            "[EMAIL ERROR] Check network connectivity and firewall settings"
+            f"[EMAIL ERROR] Resend HTTP {exc.code}: {exc.reason} - {error_body}"
         )
         return False
     except Exception as exc:
         current_app.logger.error(
-            f"[EMAIL ERROR] Unexpected error sending email to {to_email}: {type(exc).__name__}: {exc}"
+            f"[EMAIL ERROR] Unexpected Resend error: {type(exc).__name__}: {exc}"
         )
-        current_app.logger.exception("[EMAIL ERROR] Full exception traceback:")
         return False
 
 

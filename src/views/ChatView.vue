@@ -19,7 +19,7 @@
         <div class="avatar">
           <img
             v-if="otherUser.profile_picture"
-            :src="`http://localhost:5000/uploads/${otherUser.profile_picture}`"
+            :src="`${API_BASE_URL}/uploads/${otherUser.profile_picture}`"
             alt="Profile"
           />
           <div v-else class="avatar-placeholder">
@@ -129,6 +129,7 @@ import { useRoute, useRouter } from "vue-router";
 import messageService from "../services/messageService";
 import socketService from "../services/socketService";
 import authService from "../services/authService";
+import { API_BASE_URL } from "../services/api";
 
 const route = useRoute();
 const router = useRouter();

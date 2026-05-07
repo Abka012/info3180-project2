@@ -47,6 +47,7 @@ class Config:
 
     # File uploads
     UPLOAD_FOLDER = get_env_var("UPLOAD_FOLDER", "./uploads")
+    PROFILE_PICS_FOLDER = os.path.join(UPLOAD_FOLDER, "profile_pics")
     MAX_CONTENT_LENGTH = int(get_env_var("MAX_CONTENT_LENGTH", 16 * 1024 * 1024))
     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
     MAX_FILENAME_LENGTH = 255

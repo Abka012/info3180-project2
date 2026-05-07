@@ -98,6 +98,68 @@ def mock_socket_emit_direct():
 
 
 @pytest.fixture
+def second_user(client, app):
+    """Create a second verified test user with a complete profile."""
+    client.post(
+        "/api/auth/register",
+        json={
+            "email": "second@example.com",
+            "password": "TestPass123!",
+            "confirm_password": "TestPass123!",
+            "name": "Second User",
+            "age": 28,
+        },
+    )
+
+    with app.app_context():
+        from app.models import User, Profile
+
+        user = db.session.query(User).filter_by(email="second@example.com").first()
+        user.is_verified = True
+
+        # Ensure profile is populated correctly
+        profile = Profile.query.filter_by(user_id=user.user_id).first()
+        if not profile:
+            profile = Profile(user_id=user.user_id)
+            db.session.add(profile)
+
+        profile.name = "Second User"
+        profile.age = 28
+        profile.bio = "Profile for second test user"
+        profile.gender = "female"
+        profile.gender_preference = "male"
+        profile.preferred_age_min = 18
+        profile.preferred_age_max = 50
+        profile.interests = [
+            "cooking",
+            "hiking",
+            "yoga",
+            "travel",
+            "photography",
+            "coding",
+            "music",
+        ]
+        profile.relationship_goal = "serious_relationship"
+        profile.occupation = "Designer"
+        profile.visibility = True
+
+        db.session.commit()
+        db.session.refresh(profile)
+        user_id = user.user_id
+
+    response = client.post(
+        "/api/auth/login",
+        json={"email": "second@example.com", "password": "TestPass123!"},
+    )
+
+    return {
+        "user_id": user_id,
+        "token": response.json["token"],
+        "email": "second@example.com",
+    }
+
+
+@pytest.fixture
 def verified_user(client, app):
     """Create a verified test user."""
     client.post(
@@ -106,6 +168,8 @@ def verified_user(client, app):
             "email": "test@example.com",
             "password": "TestPass123!",
             "confirm_password": "TestPass123!",
+            "name": "Test User",
+            "age": 25,
         },
     )
 
@@ -135,54 +199,32 @@ def user_with_profile(client, app, verified_user):
     with app.app_context():
         from app.models import Profile
 
-        profile = Profile(
-            user_id=verified_user["user_id"],
-            name="Test User",
-            age=25,
-            bio="Test bio for the user",
-            gender="male",
-            gender_preference="female",
-            interests=["coding", "music", "reading", "gaming", "travel"],
-            relationship_goal="serious_relationship",
-            occupation="Developer",
-            visibility=True,
-        )
+        profile = Profile.query.filter_by(user_id=verified_user["user_id"]).first()
+        if not profile:
+            profile = Profile(user_id=verified_user["user_id"])
+            db.session.add(profile)
+
+        # Set explicitly for matching tests
+        profile.name = "Test User"
+        profile.age = 25
+        profile.bio = "Test bio for the user"
+        profile.gender = "male"
+        profile.gender_preference = "female"
+        profile.preferred_age_min = 18
+        profile.preferred_age_max = 50
+        profile.interests = ["coding", "music", "reading", "gaming", "travel"]
+        profile.relationship_goal = "serious_relationship"
+        profile.occupation = "Developer"
+        profile.visibility = True
+
         db.session.add(profile)
         db.session.commit()
+        db.session.refresh(profile)
+        print(
+            f"DEBUG: Profile 1 saved - interests: {profile.interests}, goal: {profile.relationship_goal}"
+        )
 
-    return verified_user
-
-
-@pytest.fixture
-def second_user(client, app):
-    """Create a second verified test user."""
-    client.post(
-        "/api/auth/register",
-        json={
-            "email": "second@example.com",
-            "password": "TestPass123!",
-            "confirm_password": "TestPass123!",
-        },
-    )
-
-    with app.app_context():
-        from app.models import User
-
-        user = db.session.query(User).filter_by(email="second@example.com").first()
-        user.is_verified = True
-        db.session.commit()
-        user_id = user.user_id
-
-    response = client.post(
-        "/api/auth/login",
-        json={"email": "second@example.com", "password": "TestPass123!"},
-    )
-
-    return {
-        "user_id": user_id,
-        "token": response.json["token"],
-        "email": "second@example.com",
-    }
+        return verified_user
 
 
 @pytest.fixture
@@ -191,22 +233,39 @@ def second_user_with_profile(client, app, second_user):
     with app.app_context():
         from app.models import Profile
 
-        profile = Profile(
-            user_id=second_user["user_id"],
-            name="Second User",
-            age=28,
-            bio="Profile for second test user",
-            gender="female",
-            gender_preference="male",
-            interests=["cooking", "hiking", "yoga", "travel", "photography"],
-            relationship_goal="serious_relationship",
-            occupation="Designer",
-            visibility=True,
-        )
+        profile = Profile.query.filter_by(user_id=second_user["user_id"]).first()
+        if not profile:
+            profile = Profile(user_id=second_user["user_id"])
+            db.session.add(profile)
+
+        profile.name = "Second User"
+        profile.age = 28
+        profile.bio = "Profile for second test user"
+        profile.gender = "female"
+        profile.gender_preference = "male"
+        profile.preferred_age_min = 18
+        profile.preferred_age_max = 50
+        profile.interests = [
+            "cooking",
+            "hiking",
+            "yoga",
+            "travel",
+            "photography",
+            "coding",
+            "music",
+        ]
+        profile.relationship_goal = "serious_relationship"
+        profile.occupation = "Designer"
+        profile.visibility = True
+
         db.session.add(profile)
         db.session.commit()
+        db.session.refresh(profile)
+        print(
+            f"DEBUG: Profile 2 saved - interests: {profile.interests}, goal: {profile.relationship_goal}"
+        )
 
-    return second_user
+        return second_user
 
 
 @pytest.fixture
@@ -281,6 +340,8 @@ def third_user(client, app):
             "email": "third@example.com",
             "password": "TestPass123!",
             "confirm_password": "TestPass123!",
+            "name": "Third User",
+            "age": 30,
         },
     )
 
@@ -310,19 +371,21 @@ def third_user_with_profile(client, app, third_user):
     with app.app_context():
         from app.models import Profile
 
-        profile = Profile(
-            user_id=third_user["user_id"],
-            name="Third User",
-            age=30,
-            bio="Profile for third test user",
-            gender="non_binary",
-            gender_preference="all",
-            interests=["art", "music", "writing", "theater", "reading"],
-            relationship_goal="friendship",
-            occupation="Artist",
-            visibility=True,
-        )
-        db.session.add(profile)
+        profile = Profile.query.filter_by(user_id=third_user["user_id"]).first()
+        if not profile:
+            profile = Profile(user_id=third_user["user_id"])
+            db.session.add(profile)
+
+        profile.name = "Third User"
+        profile.age = 30
+        profile.bio = "Profile for third test user"
+        profile.gender = "non_binary"
+        profile.gender_preference = "all"
+        profile.interests = ["art", "music", "writing", "theater", "reading"]
+        profile.relationship_goal = "friendship"
+        profile.occupation = "Artist"
+        profile.visibility = True
+
         db.session.commit()
 
     return third_user

@@ -78,7 +78,7 @@ class TestCreateProfile:
         assert response.status_code == 400
 
     def test_create_profile_duplicate(self, client, user_with_profile):
-        """Should fail if profile already exists."""
+        """Should succeed (upsert) even if profile already exists."""
         response = client.post(
             "/api/profile",
             json={
@@ -89,8 +89,9 @@ class TestCreateProfile:
             headers={"Authorization": f'Bearer {user_with_profile["token"]}'},
         )
 
-        assert response.status_code == 400
-        assert "already exists" in response.json["error"].lower()
+        assert response.status_code == 201
+        assert response.json["name"] == "Another Name"
+        assert response.json["age"] == 30
 
     def test_create_profile_missing_name(self, client, verified_user):
         """Should fail if name is missing."""
@@ -137,8 +138,15 @@ class TestGetProfile:
 
         assert response.status_code == 401
 
-    def test_get_profile_not_found(self, client, verified_user):
+    def test_get_profile_not_found(self, client, app, verified_user):
         """Should return 404 when profile doesn't exist."""
+        # Delete the auto-created profile
+        with app.app_context():
+            from app.models import Profile
+
+            Profile.query.filter_by(user_id=verified_user["user_id"]).delete()
+            db.session.commit()
+
         response = client.get(
             "/api/profile",
             headers={"Authorization": f'Bearer {verified_user["token"]}'},
@@ -173,8 +181,15 @@ class TestUpdateProfile:
         assert response.json["age"] == 26
         assert response.json["gender"] == "female"
 
-    def test_update_profile_not_found(self, client, verified_user):
+    def test_update_profile_not_found(self, client, app, verified_user):
         """Should return 404 when no profile exists."""
+        # Delete the auto-created profile
+        with app.app_context():
+            from app.models import Profile
+
+            Profile.query.filter_by(user_id=verified_user["user_id"]).delete()
+            db.session.commit()
+
         response = client.put(
             "/api/profile",
             json={"name": "John"},
@@ -250,14 +265,16 @@ class TestViewOtherProfile:
         with app.app_context():
             from app.models import Profile
 
-            profile = Profile(
-                user_id=verified_user["user_id"],
-                name="Private Owner",
-                age=25,
-                interests=["reading", "writing", "coding", "gaming", "music"],
-                visibility=False,
-            )
-            db.session.add(profile)
+            profile = Profile.query.filter_by(user_id=verified_user["user_id"]).first()
+            if not profile:
+                profile = Profile(user_id=verified_user["user_id"])
+                db.session.add(profile)
+
+            profile.name = "Private Owner"
+            profile.age = 25
+            profile.interests = ["reading", "writing", "coding", "gaming", "music"]
+            profile.visibility = False
+
             db.session.commit()
 
         response = client.get(
@@ -373,8 +390,15 @@ class TestProfilePictureUpload:
 
         assert response.status_code == 401
 
-    def test_upload_picture_no_profile(self, client, verified_user):
+    def test_upload_picture_no_profile(self, client, app, verified_user):
         """Should fail when user has no profile."""
+        # Delete the auto-created profile
+        with app.app_context():
+            from app.models import Profile
+
+            Profile.query.filter_by(user_id=verified_user["user_id"]).delete()
+            db.session.commit()
+
         data = {"file": (io.BytesIO(b"fake image content"), "test.jpg")}
 
         response = client.post(

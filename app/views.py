@@ -15,6 +15,7 @@ from app.models import (
     Notification,
     Match,
     Like,
+    Profile,
 )  # Import necessary models
 from app import (
     db,
@@ -85,11 +86,6 @@ def verify_token(token, token_type="auth"):
         return None
     except jwt.InvalidTokenError:
         return None
-
-
-def send_email(to_email, subject, body):
-    """Send email (mock for testing)."""
-    return True
 
 
 def get_user_by_public_id(public_id):
@@ -189,16 +185,21 @@ def register():
         new_user = User(
             username=username,
             email=email,
-            first_name=first_name,
-            last_name=last_name,
-            age=age,
-            gender=gender,
-            interested_in=interested_in,
-            profile_picture="default_avatar.png",  # Default profile picture
         )
         new_user.set_password(password)
 
         db.session.add(new_user)
+        db.session.flush()
+
+        new_profile = Profile(
+            user_id=new_user.id,
+            name=f"{first_name} {last_name}",
+            age=age,
+            gender=gender,
+            gender_preference=interested_in,
+            profile_picture="default_avatar.png",
+        )
+        db.session.add(new_profile)
         db.session.commit()
 
         flash("Your account has been created! Please log in.", "success")
@@ -270,17 +271,24 @@ def edit_profile():
     user = User.query.get(current_user.id)
     if request.method == "POST":
         user.username = request.form.get("username")
-        user.first_name = request.form.get("first_name")
-        user.last_name = request.form.get("last_name")
         try:
-            user.age = int(request.form.get("age"))
+            age = int(request.form.get("age"))
         except ValueError:
             flash("Invalid age. Please enter a number.", "danger")
             return redirect(url_for("views.edit_profile"))  # Use blueprint name
 
-        user.gender = request.form.get("gender")
-        user.interested_in = request.form.get("interested_in")
-        user.bio = request.form.get("bio")
+        profile = Profile.query.filter_by(user_id=current_user.id).first()
+        if not profile:
+            profile = Profile(
+                user_id=current_user.id, name=current_user.username, age=age
+            )
+            db.session.add(profile)
+        else:
+            profile.age = age
+
+        profile.gender = request.form.get("gender")
+        profile.gender_preference = request.form.get("interested_in")
+        profile.bio = request.form.get("bio")
 
         if "profile_picture" in request.files:
             file = request.files["profile_picture"]
@@ -288,21 +296,26 @@ def edit_profile():
                 ext = file.filename.rsplit(".", 1)[1].lower()
                 unique_filename = f"{uuid.uuid4()}.{ext}"
                 filename = secure_filename(unique_filename)
-                filepath = os.path.join(
-                    current_app.config["PROFILE_PICS_FOLDER"], filename
-                )
+
+                profile_pics_folder = current_app.config.get("PROFILE_PICS_FOLDER")
+                os.makedirs(profile_pics_folder, exist_ok=True)
+
+                filepath = os.path.join(profile_pics_folder, filename)
                 file.save(filepath)
-                if user.profile_picture != "default_avatar.png":
+
+                if (
+                    profile.profile_picture
+                    and profile.profile_picture != "default_avatar.png"
+                ):
                     try:
-                        os.remove(
-                            os.path.join(
-                                current_app.config["PROFILE_PICS_FOLDER"],
-                                user.profile_picture,
-                            )
+                        old_path = os.path.join(
+                            profile_pics_folder, profile.profile_picture
                         )
+                        if os.path.exists(old_path):
+                            os.remove(old_path)
                     except OSError as e:
                         print(f"Error removing old profile picture: {e}")
-                user.profile_picture = filename
+                profile.profile_picture = filename
             elif file.filename != "":
                 flash(
                     "Invalid file type for profile picture. Allowed types are png, jpg, jpeg, gif.",

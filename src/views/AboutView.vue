@@ -4,18 +4,11 @@
       <div class="hero-content">
         <div class="logo">
           <div class="logo-icon">
-            <span
-              ><svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 100 100"
-                class="w-full h-full"
-              >
-                <path
-                  d="M50 88.87C25.32 66.64 9.5 55.15 9.5 36.5 9.5 20.44 22.73 9.5 37.5 9.5c8.18 0 15.86 4.72 19.5 12.56C60.64 14.22 68.32 9.5 76.5 9.5 91.27 9.5 104.5 20.44 104.5 36.5c0 18.65-15.82 30.14-40.5 52.37z"
-                  fill="var(--primary)"
-                  transform="translate(-7, -7) scale(0.85)"
-                /></svg
-            ></span>
+                <img
+                  src="/src/assets/logo.svg"
+                  alt="DriftDater Logo"
+                  class="w-full h-full object-cover"
+                />
           </div>
           <h1>
             <span

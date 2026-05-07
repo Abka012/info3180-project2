@@ -415,7 +415,8 @@
                 >
                   <img
                     v-if="profilePicture"
-                    :src="`http://localhost:5000/uploads/${profilePicture}`"
+                    :src="`${API_BASE_URL}/uploads/${profilePicture}`"
+
                     class="w-full h-full object-cover"
                     @error="($event) => ($event.target.style.display = 'none')"
                   />
@@ -822,7 +823,8 @@
                       >
                         <img
                           v-if="match.profile_picture"
-                          :src="`http://localhost:5000/uploads/${match.profile_picture}`"
+                          :src="`${API_BASE_URL}/uploads/${match.profile_picture}`"
+
                           :alt="match.user_name"
                           class="w-full h-full object-cover"
                         />
@@ -904,6 +906,7 @@ import authService from "../services/authService";
 import profileService from "../services/profileService";
 import matchService from "../services/matchService";
 import { useAuth } from "../composables/useAuth";
+import { API_BASE_URL } from "../services/api";
 import ThemeToggle from '@/components/ThemeToggle.vue'
 
 const { isAuthenticated, user: currentUser } = useAuth();

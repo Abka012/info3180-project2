@@ -8,6 +8,7 @@
 
 import { io } from "socket.io-client";
 import authService from "./authService";
+import { API_BASE_URL } from "./api";
 
 let socket = null;
 
@@ -45,8 +46,7 @@ export const socketService = {
   connect() {
     if (socket?.connected) return socket;
 
-    const SOCKET_BASE_URL =
-      import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+    const SOCKET_BASE_URL = API_BASE_URL;
     socket = io(SOCKET_BASE_URL, {
       transports: ["websocket", "polling"],
       autoConnect: true,
