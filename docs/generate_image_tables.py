@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 import re
 
@@ -43,7 +42,6 @@ def generate_image_tables(docs_dir="docs"):
 
 def update_user_manual(docs_dir="docs"):
     manual_path = Path(docs_dir) / "user_manual.md"
-    images_dir = Path(docs_dir) / "images"
 
     if not manual_path.exists():
         print(f"❌ User manual not found: {manual_path}")
