@@ -2,6 +2,7 @@
   <div
     class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12"
   >
+
     <div class="w-full max-w-md">
       <!-- Card -->
       <div
@@ -374,6 +375,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuth } from "../composables/useAuth";
 import authService, { validateEmail } from "../services/authService";
+import ThemeToggle from '@/components/ThemeToggle.vue'
 
 const router = useRouter();
 const route = useRoute();

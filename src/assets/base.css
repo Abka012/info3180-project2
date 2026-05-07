@@ -613,3 +613,25 @@
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
 }
+
+body.light-mode {
+  background-color: black;
+  color: white;
+
+  .input {
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid #ffffff;
+    border-radius: 0.5rem;
+    background-color: black;
+    transition: all 0.2s;
+  }
+  .card {
+    background-color: rgb(255, 255, 255);
+    border-radius: 0.75rem;
+    box-shadow:
+      0 1px 3px 0 rgba(255, 255, 255, 0.1),
+      0 1px 2px -1px rgba(253, 252, 252, 0.1);
+}*/
+/* }  */
+/* } */

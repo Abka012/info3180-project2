@@ -1,4 +1,5 @@
 <template>
+  <ThemeToggle />
   <div class="about-container">
     <section class="hero">
       <div class="hero-content">
@@ -341,6 +342,7 @@
 </template>
 
 <script setup>
+import ThemeToggle from '@/components/ThemeToggle.vue'
 const currentYear = new Date().getFullYear();
 </script>
 
