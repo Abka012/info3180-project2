@@ -3,6 +3,7 @@ import re
 from flask import Blueprint, request, jsonify
 from app.models import User, Profile
 from app import db, limiter
+from app.email_utils import send_email
 from flask_login import login_user, logout_user
 
 bp = Blueprint("auth", __name__, url_prefix="/api/auth")
@@ -171,7 +172,25 @@ def resend_verification():
     user.verification_token = secrets.token_urlsafe(32)
     db.session.commit()
 
-    # In production, send email here
+    # Send verification email
+    from flask import current_app
+
+    verification_url = f"{current_app.config.get('FRONTEND_URL', 'http://localhost:5173')}/verify/{user.verification_token}"
+    subject = "Verify your email - Dating App"
+    body = f"""
+    <html>
+        <body style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2>Verify your email</h2>
+            <p>Thanks for signing up! Please click the link below to verify your email:</p>
+            <p><a href="{verification_url}" style="background: #e74c3c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Verify Email</a></p>
+            <p>Or copy and paste this link into your browser:</p>
+            <p style="color: #666;">{verification_url}</p>
+            <p style="color: #999; font-size: 12px;">This link expires in 7 days.</p>
+        </body>
+    </html>
+    """
+    send_email(user.email, subject, body)
+
     return jsonify({"message": "Verification email sent"}), 200
 
 
