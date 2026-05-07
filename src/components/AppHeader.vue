@@ -7,20 +7,13 @@
         <!-- Logo -->
         <router-link to="/" class="flex items-center space-x-2">
           <div
-            class="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center"
+            class="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center overflow-hidden"
           >
-            <span class="text-[var(--text-primary)] font-bold text-sm"
-              ><svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 100 100"
-                class="w-5 h-5"
-              >
-                <path
-                  d="M50 88.87C25.32 66.64 9.5 55.15 9.5 36.5 9.5 20.44 22.73 9.5 37.5 9.5c8.18 0 15.86 4.72 19.5 12.56C60.64 14.22 68.32 9.5 76.5 9.5 91.27 9.5 104.5 20.44 104.5 36.5c0 18.65-15.82 30.14-40.5 52.37z"
-                  fill="currentColor"
-                  transform="translate(-7, -7) scale(0.85)"
-                /></svg
-            ></span>
+            <img
+              src="/src/assets/logo.svg"
+              alt="DriftDater Logo"
+              class="w-full h-full object-cover"
+            />
           </div>
           <span
             class="text-xl font-bold bg-gradient-to-r from-[var(--primary)] to-[var(--success)] bg-clip-text text-transparent"
@@ -125,7 +118,6 @@
                 <img
                   v-if="userProfilePicture"
                   :src="`${API_BASE_URL}/uploads/${userProfilePicture}`"
-
                   class="w-full h-full object-cover"
                   @error="($event) => ($event.target.style.display = 'none')"
                 />
@@ -176,7 +168,6 @@
                     <img
                       v-if="userProfilePicture"
                       :src="`${API_BASE_URL}/uploads/${userProfilePicture}`"
-
                       class="w-full h-full object-cover"
                       @error="
                         ($event) => ($event.target.style.display = 'none')
@@ -749,7 +740,7 @@ import notificationService from "../services/notificationService";
 import messageService from "../services/messageService";
 import socketService from "../services/socketService";
 import { useAuth } from "../composables/useAuth";
-import ThemeToggle from '@/components/ThemeToggle.vue'
+import ThemeToggle from "@/components/ThemeToggle.vue";
 
 const router = useRouter();
 const { isAuthenticated, logout: authLogout } = useAuth();

@@ -56,20 +56,13 @@
         <!-- Header -->
         <div class="text-center mb-8">
           <div
-            class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center"
+            class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center overflow-hidden"
           >
-            <span class="text-[var(--bg)] font-bold text-2xl"
-              ><svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 100 100"
-                class="w-5 h-5"
-              >
-                <path
-                  d="M50 88.87C25.32 66.64 9.5 55.15 9.5 36.5 9.5 20.44 22.73 9.5 37.5 9.5c8.18 0 15.86 4.72 19.5 12.56C60.64 14.22 68.32 9.5 76.5 9.5 91.27 9.5 104.5 20.44 104.5 36.5c0 18.65-15.82 30.14-40.5 52.37z"
-                  fill="currentColor"
-                  transform="translate(-7, -7) scale(0.85)"
-                /></svg
-            ></span>
+            <img
+              src="/src/assets/logo.svg"
+              alt="DriftDater Logo"
+              class="w-full h-full object-cover"
+            />
           </div>
           <h1 class="text-2xl font-bold text-[var(--text-primary)] mb-2">
             Join DriftDater
