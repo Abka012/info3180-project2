@@ -78,7 +78,7 @@ onMounted(loadMatches);
 h1 {
   font-size: 1.75rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #14b8a6, #8b5cf6);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -86,38 +86,35 @@ h1 {
 }
 
 .loading {
-  text-center: center;
+  text-align: center;
   padding: 3.75rem;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .no-matches {
-  text-center: center;
+  text-align: center;
   padding: 3.75rem;
-  background: white;
-  dark: bg-gray-800;
+  background: var(--surface);
   border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
 }
 
 .no-matches h3 {
-  color: #111827;
-  dark: text-white;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
 .no-matches p {
-  color: #6b7280;
-  dark: text-gray-400;
+  color: var(--text-secondary);
   margin-bottom: 1.25rem;
 }
 
 .btn-primary {
   display: inline-block;
   padding: 0.875rem 1.875rem;
-  background: linear-gradient(to right, #14b8a6, #0d9488);
-  color: white;
-  text-decoration: none;
+  background: var(--primary);
+  color: var(--bg);
   border-radius: 0.5rem;
   font-weight: 600;
   transition: all 0.2s;
@@ -125,7 +122,7 @@ h1 {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+  box-shadow: var(--shadow-lg);
 }
 
 .matches-grid {
@@ -135,25 +132,24 @@ h1 {
 }
 
 .match-card {
-  background: white;
-  dark: bg-gray-800;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: 1rem;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   transition: all 0.3s;
   cursor: pointer;
 }
 
 .match-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .match-image {
   width: 100%;
   height: 200px;
-  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-  dark: bg-gray-700;
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -167,7 +163,7 @@ h1 {
 
 .avatar-placeholder {
   font-size: 60px;
-  color: #e91e63;
+  color: var(--primary);
   font-weight: bold;
 }
 
@@ -177,12 +173,12 @@ h1 {
 
 .match-info h3 {
   margin: 0 0 5px 0;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .matched-at {
   font-size: 12px;
-  color: #999;
+  color: var(--text-secondary);
   margin: 0;
 }
 </style>

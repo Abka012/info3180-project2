@@ -1,18 +1,29 @@
 <template>
   <header
-    class="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 transition-colors duration-300"
+    class="fixed top-0 left-0 right-0 z-50 bg-[var(--bg)]/80 bg-[var(--surface)]/80 backdrop-blur-md border-b border-[var(--border)] transition-colors duration-300 py-2 px-4"
   >
     <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16">
         <!-- Logo -->
         <router-link to="/" class="flex items-center space-x-2">
           <div
-            class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center"
+            class="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center"
           >
-            <span class="text-white font-bold text-sm">D</span>
+            <span class="text-[var(--text-primary)] font-bold text-sm"
+              ><svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 100 100"
+                class="w-5 h-5"
+              >
+                <path
+                  d="M50 88.87C25.32 66.64 9.5 55.15 9.5 36.5 9.5 20.44 22.73 9.5 37.5 9.5c8.18 0 15.86 4.72 19.5 12.56C60.64 14.22 68.32 9.5 76.5 9.5 91.27 9.5 104.5 20.44 104.5 36.5c0 18.65-15.82 30.14-40.5 52.37z"
+                  fill="currentColor"
+                  transform="translate(-7, -7) scale(0.85)"
+                /></svg
+            ></span>
           </div>
           <span
-            class="text-xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent"
+            class="text-xl font-bold bg-gradient-to-r from-[var(--primary)] to-[var(--success)] bg-clip-text text-transparent"
           >
             DriftDater
           </span>
@@ -23,33 +34,33 @@
           <template v-if="isAuthenticated">
             <router-link
               to="/browse"
-              class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              class="px-3 py-2 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:bg-[var(--surface)] transition-colors"
             >
               Browse
             </router-link>
 
             <router-link
               to="/search"
-              class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              class="px-3 py-2 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:bg-[var(--surface)] transition-colors"
             >
               Search
             </router-link>
 
             <router-link
               to="/matches"
-              class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              class="px-3 py-2 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:bg-[var(--surface)] transition-colors"
             >
               Matches
             </router-link>
 
             <router-link
               to="/messages"
-              class="relative px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              class="relative px-3 py-2 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:bg-[var(--surface)] transition-colors"
             >
               Messages
               <span
                 v-if="messageUnread"
-                class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                class="absolute -top-1 -right-1 bg-[var(--danger)] text-[var(--text-primary)] text-xs rounded-full w-5 h-5 flex items-center justify-center"
               >
                 {{ messageUnread > 9 ? "9+" : messageUnread }}
               </span>
@@ -57,7 +68,7 @@
 
             <router-link
               to="/favorites"
-              class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              class="px-3 py-2 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:bg-[var(--surface)] transition-colors"
             >
               Favorites
             </router-link>
@@ -68,7 +79,7 @@
         <div class="flex items-center space-x-2">
           <!-- Dark Mode Toggle -->
           <button
-            class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors"
+            class="p-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface)] transition-colors"
             title="Toggle theme"
             @click="toggleDarkMode"
           >
@@ -105,11 +116,11 @@
           <!-- User Avatar Dropdown (Desktop) -->
           <div v-if="isAuthenticated" class="relative hidden md:block">
             <button
-              class="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              class="flex items-center gap-2 p-1 rounded-full hover:bg-[var(--surface)] hover:bg-[var(--surface)] transition-colors"
               @click="dropdownOpen = !dropdownOpen"
             >
               <div
-                class="w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-sm"
+                class="w-8 h-8 rounded-full overflow-hidden border-2 border-[var(--bg)] shadow-sm"
               >
                 <img
                   v-if="userProfilePicture"
@@ -119,15 +130,15 @@
                 />
                 <div
                   v-else
-                  class="w-full h-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center"
+                  class="w-full h-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center"
                 >
-                  <span class="text-white font-bold text-xs">{{
+                  <span class="text-[var(--text-primary)] font-bold text-xs">{{
                     userInitials
                   }}</span>
                 </div>
               </div>
               <svg
-                class="w-4 h-4 text-gray-500 dark:text-gray-400"
+                class="w-4 h-4 text-[var(--text-secondary)]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -152,14 +163,14 @@
             >
               <div
                 v-if="dropdownOpen"
-                class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50"
+                class="absolute right-0 mt-2 w-64 bg-[var(--bg)] rounded-xl shadow-lg border border-[var(--border)] py-2 z-50"
                 @click="dropdownOpen = false"
               >
                 <div
-                  class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3"
+                  class="px-4 py-3 border-b border-[var(--border)] flex items-center gap-3"
                 >
                   <div
-                    class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-200 flex-shrink-0"
+                    class="w-10 h-10 rounded-full overflow-hidden border-2 border-[var(--border)] flex-shrink-0"
                   >
                     <img
                       v-if="userProfilePicture"
@@ -171,16 +182,17 @@
                     />
                     <div
                       v-else
-                      class="w-full h-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center"
+                      class="w-full h-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center"
                     >
-                      <span class="text-white font-bold text-sm">{{
-                        userInitials
-                      }}</span>
+                      <span
+                        class="text-[var(--text-primary)] font-bold text-sm"
+                        >{{ userInitials }}</span
+                      >
                     </div>
                   </div>
                   <div class="flex-1 min-w-0">
                     <p
-                      class="text-sm font-medium text-gray-900 dark:text-white truncate"
+                      class="text-sm font-medium text-[var(--text-primary)] truncate"
                     >
                       {{ userName }}
                     </p>
@@ -264,7 +276,7 @@
                   Messages
                   <span
                     v-if="messageUnread"
-                    class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5"
+                    class="ml-auto bg-[var(--danger)] text-[var(--text-primary)] text-xs rounded-full px-2 py-0.5"
                   >
                     {{ messageUnread > 9 ? "9+" : messageUnread }}
                   </span>
@@ -289,9 +301,7 @@
                   Favorites
                 </router-link>
 
-                <div
-                  class="border-t border-gray-200 dark:border-gray-700 my-1"
-                ></div>
+                <div class="border-t border-[var(--border)] my-1"></div>
 
                 <!-- Account Settings -->
                 <router-link to="/profile" class="dropdown-item">
@@ -350,18 +360,16 @@
                   Notifications
                   <span
                     v-if="unreadCount"
-                    class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5"
+                    class="ml-auto bg-[var(--danger)] text-[var(--text-primary)] text-xs rounded-full px-2 py-0.5"
                   >
                     {{ unreadCount > 9 ? "9+" : unreadCount }}
                   </span>
                 </router-link>
 
-                <div
-                  class="border-t border-gray-200 dark:border-gray-700 my-1"
-                ></div>
+                <div class="border-t border-[var(--border)] my-1"></div>
 
                 <button
-                  class="dropdown-item text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 w-full"
+                  class="dropdown-item text-[var(--danger)] text-[var(--danger)] hover:bg-[var(--surface)] w-full"
                   @click="confirmLogout"
                 >
                   <svg
@@ -389,13 +397,13 @@
           <div v-else class="hidden md:flex items-center space-x-2">
             <router-link
               to="/login"
-              class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              class="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:bg-[var(--surface)] rounded-lg transition-colors"
             >
               Login
             </router-link>
             <router-link
               to="/register"
-              class="px-4 py-2 text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-lg transition-colors"
+              class="px-4 py-2 text-sm font-medium text-[var(--text-primary)] bg-[var(--primary)] hover:bg-[var(--primary)] rounded-lg transition-colors"
             >
               Sign Up
             </router-link>
@@ -403,7 +411,7 @@
 
           <!-- Mobile Menu Button -->
           <button
-            class="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            class="md:hidden p-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface)]"
             @click="mobileMenuOpen = !mobileMenuOpen"
           >
             <svg
@@ -442,14 +450,14 @@
       >
         <div
           v-if="mobileMenuOpen"
-          class="md:hidden py-4 border-t border-gray-200 dark:border-gray-700"
+          class="md:hidden py-4 border-t border-[var(--border)]"
         >
           <div class="flex flex-col space-y-1">
             <template v-if="isAuthenticated">
               <!-- Navigation Items -->
               <router-link
                 to="/browse"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:bg-[var(--surface)]"
                 @click="mobileMenuOpen = false"
               >
                 <svg
@@ -469,7 +477,7 @@
 
               <router-link
                 to="/search"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:bg-[var(--surface)]"
                 @click="mobileMenuOpen = false"
               >
                 <svg
@@ -487,7 +495,7 @@
 
               <router-link
                 to="/matches"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:bg-[var(--surface)]"
                 @click="mobileMenuOpen = false"
               >
                 <svg
@@ -506,7 +514,7 @@
 
               <router-link
                 to="/messages"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:bg-[var(--surface)]"
                 @click="mobileMenuOpen = false"
               >
                 <svg
@@ -523,7 +531,7 @@
                 Messages
                 <span
                   v-if="messageUnread"
-                  class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5"
+                  class="ml-auto bg-[var(--danger)] text-[var(--text-primary)] text-xs rounded-full px-2 py-0.5"
                 >
                   {{ messageUnread }}
                 </span>
@@ -531,7 +539,7 @@
 
               <router-link
                 to="/favorites"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:bg-[var(--surface)]"
                 @click="mobileMenuOpen = false"
               >
                 <svg
@@ -546,12 +554,10 @@
                 Favorites
               </router-link>
 
-              <div
-                class="border-t border-gray-200 dark:border-gray-700 my-2 pt-2"
-              >
+              <div class="border-t border-[var(--border)] my-2 pt-2">
                 <router-link
                   to="/profile"
-                  class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:bg-[var(--surface)]"
                   @click="mobileMenuOpen = false"
                 >
                   <svg
@@ -573,7 +579,7 @@
 
                 <router-link
                   to="/settings"
-                  class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:bg-[var(--surface)]"
                   @click="mobileMenuOpen = false"
                 >
                   <svg
@@ -597,7 +603,7 @@
 
                 <router-link
                   to="/notifications"
-                  class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:bg-[var(--surface)]"
                   @click="mobileMenuOpen = false"
                 >
                   <svg
@@ -617,7 +623,7 @@
                   Notifications
                   <span
                     v-if="unreadCount"
-                    class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5"
+                    class="ml-auto bg-[var(--danger)] text-[var(--text-primary)] text-xs rounded-full px-2 py-0.5"
                   >
                     {{ unreadCount }}
                   </span>
@@ -625,7 +631,7 @@
               </div>
 
               <button
-                class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-[var(--danger)] text-[var(--danger)] hover:bg-[var(--surface)]"
                 @click="confirmLogout"
               >
                 <svg
@@ -649,14 +655,14 @@
             <template v-else>
               <router-link
                 to="/login"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:bg-[var(--surface)]"
                 @click="mobileMenuOpen = false"
               >
                 Login
               </router-link>
               <router-link
                 to="/register"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-white bg-primary-500 hover:bg-primary-600"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium text-[var(--text-primary)] bg-[var(--primary)] hover:bg-[var(--primary)]"
                 @click="mobileMenuOpen = false"
               >
                 Sign Up
@@ -679,19 +685,19 @@
   >
     <div
       v-if="showLogoutModal"
-      class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[var(--overlay)] backdrop-blur-sm"
       @click.self="cancelLogout"
     >
       <div
-        class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-md"
+        class="bg-[var(--bg)] rounded-2xl shadow-2xl p-6 w-full max-w-md"
         @click.stop
       >
         <div class="text-center mb-6">
           <div
-            class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center"
+            class="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--surface)] flex items-center justify-center"
           >
             <svg
-              class="w-8 h-8 text-red-600 dark:text-red-400"
+              class="w-8 h-8 text-[var(--danger)] text-[var(--danger)]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -704,10 +710,10 @@
               />
             </svg>
           </div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          <h3 class="text-xl font-bold text-[var(--text-primary)] mb-2">
             Logout
           </h3>
-          <p class="text-gray-600 dark:text-gray-400">
+          <p class="text-[var(--text-secondary)]">
             Are you sure you want to logout? You'll need to sign in again to
             access your account.
           </p>
@@ -715,13 +721,13 @@
 
         <div class="flex gap-3">
           <button
-            class="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-full transition-colors"
+            class="flex-1 py-3 px-4 bg-[var(--surface)] hover:bg-[var(--surface)] hover:bg-[var(--surface)] text-[var(--text-secondary)] font-medium rounded-full transition-colors"
             @click="cancelLogout"
           >
             Cancel
           </button>
           <button
-            class="flex-1 py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium rounded-full transition-all shadow-lg"
+            class="flex-1 py-3 px-4 bg-[var(--primary)] hover:bg-[var(--primary)] text-[var(--text-primary)] font-medium rounded-full transition-all shadow-lg"
             @click="handleLogout"
           >
             Logout
@@ -752,18 +758,11 @@ const isDark = ref(false);
 
 // Initialize theme state on component creation
 const initTheme = () => {
-  const savedTheme = localStorage.getItem("theme");
-  const systemPrefersDark = window.matchMedia(
-    "(prefers-color-scheme: dark)",
-  ).matches;
-
-  if (savedTheme === "dark" || (!savedTheme && systemPrefersDark)) {
-    document.documentElement.classList.add("dark");
-    isDark.value = true;
-  } else {
-    document.documentElement.classList.remove("dark");
-    isDark.value = false;
-  }
+  const saved = localStorage.getItem("theme");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const theme = saved || (prefersDark ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", theme);
+  isDark.value = theme === "dark";
 };
 
 // Call initTheme immediately
@@ -787,14 +786,9 @@ const userInitials = computed(() => {
 
 const toggleDarkMode = () => {
   isDark.value = !isDark.value;
-
-  if (isDark.value) {
-    document.documentElement.classList.add("dark");
-    localStorage.setItem("theme", "dark");
-  } else {
-    document.documentElement.classList.remove("dark");
-    localStorage.setItem("theme", "light");
-  }
+  const theme = isDark.value ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("theme", theme);
 };
 
 const checkAuth = async () => {
@@ -897,21 +891,13 @@ onUnmounted(() => {
   width: 100%;
   padding: 0.625rem 1rem;
   text-align: left;
-  color: #374151;
+  color: var(--text-secondary);
   font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.15s;
 }
 
-:global(.dark) .dropdown-item {
-  color: #f3f4f6;
-}
-
 .dropdown-item:hover {
-  background: #f3f4f6;
-}
-
-:global(.dark) .dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface);
 }
 </style>

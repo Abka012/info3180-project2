@@ -216,14 +216,14 @@ onMounted(loadProfile);
 }
 
 .edit-card {
-  background: white;
+  background: var(--bg);
   padding: 40px;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 h2 {
-  color: #e91e63;
+  color: var(--color-danger);
   margin-bottom: 30px;
   text-align: center;
 }
@@ -242,7 +242,7 @@ label {
   display: block;
   margin-bottom: 6px;
   font-weight: 500;
-  color: #333;
+  color: var(--color-text-secondary);
 }
 
 input,
@@ -250,7 +250,7 @@ select,
 textarea {
   width: 100%;
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   font-size: 14px;
   box-sizing: border-box;
@@ -261,7 +261,7 @@ input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: #e91e63;
+  border-color: var(--color-danger);
 }
 
 textarea {
@@ -269,7 +269,7 @@ textarea {
 }
 
 .error {
-  color: #e53935;
+  color: var(--color-primary);
   font-size: 12px;
   margin-top: 4px;
   display: block;
@@ -304,12 +304,12 @@ button {
 }
 
 button[type="submit"] {
-  background: #e91e63;
-  color: white;
+  background: var(--color-danger);
+  color: var(--color-text);
 }
 
 button[type="submit"]:hover:not(:disabled) {
-  background: #c2185b;
+  background: var(--color-primary);
 }
 
 button[type="submit"]:disabled {
@@ -318,11 +318,11 @@ button[type="submit"]:disabled {
 }
 
 .btn-secondary {
-  background: #f5f5f5;
-  color: #333;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
 }
 
 .btn-secondary:hover {
-  background: #eee;
+  background: var(--color-surface);
 }
 </style>

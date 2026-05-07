@@ -280,13 +280,13 @@ class TestResendVerification:
         assert "sent" in response.json["message"].lower()
 
     def test_resend_verification_already_verified(self, client, app, verified_user):
-        """Should fail for already verified users."""
+        """Should return generic message for already verified users (security)."""
         response = client.post(
             "/api/auth/resend-verification", json={"email": verified_user["email"]}
         )
 
-        assert response.status_code == 400
-        assert "already verified" in response.json["error"].lower()
+        assert response.status_code == 200
+        assert "sent" in response.json["message"].lower()
 
     def test_resend_verification_nonexistent_user(self, client):
         """Should not reveal if email exists (security)."""

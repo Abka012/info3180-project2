@@ -4,9 +4,25 @@
       <div class="hero-content">
         <div class="logo">
           <div class="logo-icon">
-            <span>D</span>
+            <span
+              ><svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 100 100"
+                class="w-full h-full"
+              >
+                <path
+                  d="M50 88.87C25.32 66.64 9.5 55.15 9.5 36.5 9.5 20.44 22.73 9.5 37.5 9.5c8.18 0 15.86 4.72 19.5 12.56C60.64 14.22 68.32 9.5 76.5 9.5 91.27 9.5 104.5 20.44 104.5 36.5c0 18.65-15.82 30.14-40.5 52.37z"
+                  fill="var(--primary)"
+                  transform="translate(-7, -7) scale(0.85)"
+                /></svg
+            ></span>
           </div>
-          <h1>DriftDater</h1>
+          <h1>
+            <span
+              class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--primary)] to-[var(--success)] bg-clip-text text-transparent"
+              >DriftDater</span
+            >
+          </h1>
         </div>
         <p class="tagline">
           Find meaningful connections in a world full of possibilities
@@ -168,7 +184,7 @@
             </svg>
           </div>
           <h3>Safe & Secure</h3>
-          <p>
+          <p class="leading-snug">
             Your privacy matters. Control your visibility and block anyone who
             makes you uncomfortable.
           </p>
@@ -338,21 +354,13 @@ const currentYear = new Date().getFullYear();
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(
-    135deg,
-    rgba(20, 184, 166, 0.1) 0%,
-    rgba(139, 92, 246, 0.1) 100%
-  );
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface) 100%);
   padding: 4rem 1.5rem;
   text-align: center;
 }
 
-:global(.dark) .hero {
-  background: linear-gradient(
-    135deg,
-    rgba(20, 184, 166, 0.05) 0%,
-    rgba(139, 92, 246, 0.05) 100%
-  );
+[data-theme="dark"] .hero {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface) 100%);
 }
 
 .hero-content {
@@ -371,22 +379,25 @@ const currentYear = new Date().getFullYear();
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #14b8a6, #8b5cf6);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 12px;
 }
 
 .logo-icon span {
-  color: white;
-  font-size: 2rem;
-  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 .logo h1 {
   font-size: 2.5rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #14b8a6, #8b5cf6);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -395,13 +406,13 @@ const currentYear = new Date().getFullYear();
 
 .tagline {
   font-size: 1.25rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin-bottom: 2rem;
   line-height: 1.6;
 }
 
-:global(.dark) .tagline {
-  color: #9ca3af;
+[data-theme="dark"] .tagline {
+  color: var(--text-secondary);
 }
 
 .cta-buttons {
@@ -416,9 +427,8 @@ const currentYear = new Date().getFullYear();
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 1.5rem;
-  background: linear-gradient(135deg, #14b8a6, #0d9488);
-  color: white;
-  text-decoration: none;
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  color: var(--bg);
   border-radius: 0.75rem;
   font-weight: 600;
   transition: all 0.2s;
@@ -426,7 +436,7 @@ const currentYear = new Date().getFullYear();
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(20, 184, 166, 0.4);
+  box-shadow: var(--shadow-lg);
 }
 
 .btn-secondary {
@@ -434,25 +444,24 @@ const currentYear = new Date().getFullYear();
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 1.5rem;
-  background: #f3f4f6;
-  color: #374151;
-  text-decoration: none;
+  background: var(--surface);
+  color: var(--text-primary);
   border-radius: 0.75rem;
   font-weight: 600;
   transition: all 0.2s;
 }
 
-:global(.dark) .btn-secondary {
-  background: #374151;
-  color: #f9fafb;
+[data-theme="dark"] .btn-secondary {
+  background: var(--surface);
+  color: var(--text-primary);
 }
 
 .btn-secondary:hover {
-  background: #e5e7eb;
+  background: var(--surface);
 }
 
-:global(.dark) .btn-secondary:hover {
-  background: #4b5563;
+[data-theme="dark"] .btn-secondary:hover {
+  background: var(--surface);
 }
 
 .features,
@@ -467,23 +476,23 @@ const currentYear = new Date().getFullYear();
   font-size: 2rem;
   font-weight: 700;
   text-align: center;
-  color: #111827;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
-:global(.dark) .features h2,
-:global(.dark) .how-it-works h2 {
-  color: #f9fafb;
+[data-theme="dark"] .features h2,
+[data-theme="dark"] .how-it-works h2 {
+  color: var(--text-primary);
 }
 
 .section-desc {
   text-align: center;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin-bottom: 3rem;
 }
 
-:global(.dark) .section-desc {
-  color: #9ca3af;
+[data-theme="dark"] .section-desc {
+  color: var(--text-secondary);
 }
 
 .features-grid {
@@ -493,68 +502,64 @@ const currentYear = new Date().getFullYear();
 }
 
 .feature-card {
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--bg);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(20, 184, 166, 0.1);
+  border: 1px solid var(--border);
   border-radius: 1rem;
   padding: 1.5rem;
   transition: all 0.3s;
 }
 
-:global(.dark) .feature-card {
-  background: rgba(31, 41, 55, 0.6);
-  border-color: rgba(139, 92, 246, 0.15);
+[data-theme="dark"] .feature-card {
+  background: var(--surface);
+  border-color: var(--border);
 }
 
 .feature-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(20, 184, 166, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
-:global(.dark) .feature-card:hover {
-  box-shadow: 0 12px 40px rgba(139, 92, 246, 0.15);
+[data-theme="dark"] .feature-card:hover {
+  box-shadow: var(--shadow-lg);
 }
 
 .feature-icon {
   width: 56px;
   height: 56px;
   border-radius: 0.75rem;
-  background: linear-gradient(
-    135deg,
-    rgba(20, 184, 166, 0.1),
-    rgba(139, 92, 246, 0.1)
-  );
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 1rem;
-  color: #14b8a6;
+  color: var(--primary);
 }
 
-:global(.dark) .feature-icon {
-  color: #8b5cf6;
+[data-theme="dark"] .feature-icon {
+  color: var(--accent);
 }
 
 .feature-card h3 {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
-:global(.dark) .feature-card h3 {
-  color: #f9fafb;
+[data-theme="dark"] .feature-card h3 {
+  color: var(--text-primary);
 }
 
 .feature-card p {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.875rem;
   line-height: 1.6;
   margin: 0;
 }
 
-:global(.dark) .feature-card p {
-  color: #9ca3af;
+[data-theme="dark"] .feature-card p {
+  color: var(--text-secondary);
 }
 
 .steps {
@@ -577,8 +582,8 @@ const currentYear = new Date().getFullYear();
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #14b8a6, #0d9488);
-  color: white;
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  color: var(--bg);
   font-size: 1.25rem;
   font-weight: 700;
   display: flex;
@@ -587,36 +592,36 @@ const currentYear = new Date().getFullYear();
   margin: 0 auto 1rem;
 }
 
-:global(.dark) .step-number {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+[data-theme="dark"] .step-number {
+  background: linear-gradient(135deg, var(--accent), var(--accent));
 }
 
 .step h3 {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
-:global(.dark) .step h3 {
-  color: #f9fafb;
+[data-theme="dark"] .step h3 {
+  color: var(--text-primary);
 }
 
 .step p {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.875rem;
   line-height: 1.6;
   margin: 0;
 }
 
-:global(.dark) .step p {
-  color: #9ca3af;
+[data-theme="dark"] .step p {
+  color: var(--text-secondary);
 }
 
 .step-connector {
   width: 60px;
   height: 2px;
-  background: linear-gradient(90deg, #14b8a6, #8b5cf6);
+  background: linear-gradient(90deg, var(--primary), var(--accent));
   margin-top: 24px;
   flex-shrink: 0;
 }
@@ -628,11 +633,7 @@ const currentYear = new Date().getFullYear();
 }
 
 .safety {
-  background: linear-gradient(
-    135deg,
-    rgba(20, 184, 166, 0.05) 0%,
-    rgba(139, 92, 246, 0.05) 100%
-  );
+  background: var(--surface);
   padding: 5rem 1.5rem;
 }
 
@@ -645,21 +646,21 @@ const currentYear = new Date().getFullYear();
 .safety h2 {
   font-size: 2rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
-:global(.dark) .safety h2 {
-  color: #f9fafb;
+[data-theme="dark"] .safety h2 {
+  color: var(--text-primary);
 }
 
 .safety > .safety-content > p {
-  color: #6b7280;
+  color: var(--text-secondary);
   margin-bottom: 2rem;
 }
 
-:global(.dark) .safety > .safety-content > p {
-  color: #9ca3af;
+[data-theme="dark"] .safety > .safety-content > p {
+  color: var(--text-secondary);
 }
 
 .safety-features {
@@ -674,22 +675,22 @@ const currentYear = new Date().getFullYear();
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--bg);
   border-radius: 0.5rem;
-  color: #374151;
+  color: var(--text-primary);
 }
 
-:global(.dark) .safety-item {
-  background: rgba(31, 41, 55, 0.8);
-  color: #f9fafb;
+[data-theme="dark"] .safety-item {
+  background: var(--surface);
+  color: var(--text-primary);
 }
 
 .safety-item svg {
-  color: #14b8a6;
+  color: var(--primary);
 }
 
-:global(.dark) .safety-item svg {
-  color: #8b5cf6;
+[data-theme="dark"] .safety-item svg {
+  color: var(--accent);
 }
 
 .safety-item span {
@@ -712,7 +713,7 @@ const currentYear = new Date().getFullYear();
 .stat-number {
   font-size: 3rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #14b8a6, #8b5cf6);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -721,28 +722,28 @@ const currentYear = new Date().getFullYear();
 }
 
 .stat-label {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-:global(.dark) .stat-label {
-  color: #9ca3af;
+[data-theme="dark"] .stat-label {
+  color: var(--text-secondary);
 }
 
 .cta {
-  background: linear-gradient(135deg, #14b8a6, #8b5cf6);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
   padding: 5rem 1.5rem;
   text-align: center;
-  color: white;
+  color: var(--bg);
 }
 
 .cta h2 {
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 0.75rem;
-  color: white;
+  color: var(--bg);
 }
 
 .cta p {
@@ -757,9 +758,8 @@ const currentYear = new Date().getFullYear();
   align-items: center;
   gap: 0.5rem;
   padding: 1rem 2rem;
-  background: white;
-  color: #14b8a6;
-  text-decoration: none;
+  background: var(--bg);
+  color: var(--primary);
   border-radius: 0.75rem;
   font-weight: 700;
   font-size: 1.125rem;
@@ -768,6 +768,6 @@ const currentYear = new Date().getFullYear();
 
 .btn-primary-large:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-xl);
 }
 </style>

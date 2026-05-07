@@ -9,16 +9,11 @@ show_help() {
     echo "Options:"
     echo "  --all           Run all tests (default)"
     echo "  --auth          Run authentication tests only"
-    echo "  --seed          Run seed script tests only"
-    echo "  --utils         Run utility function tests only"
-    echo "  --migrations    Run migration tests only"
-    echo "  --profile       Run profile tests only"
-    echo "  --likes         Run likes/dislikes tests only"
     echo "  --matches       Run match algorithm tests only"
     echo "  --notifications Run notification tests only"
     echo "  --messaging     Run messaging tests only"
+    echo "  --profile       Run profile tests only"
     echo "  --search        Run search tests only"
-    echo "  --integration   Run integration tests only"
     echo "  --fast          Run core tests only (auth, seed, utils, migrations)"
     echo "  --coverage      Run all tests with coverage report"
     echo "  --help          Show this help message"
@@ -41,40 +36,16 @@ run_auth() {
     pytest tests/test_auth.py -v --tb=short
 }
 
-run_seed() {
-    source .venv/bin/activate 2>/dev/null || true
-    echo "Running seed script tests..."
-    pytest tests/test_seed.py -v --tb=short
-}
-
-run_utils() {
-    source .venv/bin/activate 2>/dev/null || true
-    echo "Running utility function tests..."
-    pytest tests/test_utils.py -v --tb=short
-}
-
-run_migrations() {
-    source .venv/bin/activate 2>/dev/null || true
-    echo "Running migration tests..."
-    pytest tests/test_migrations.py -v --tb=short
-}
-
-run_profile() {
-    source .venv/bin/activate 2>/dev/null || true
-    echo "Running profile tests..."
-    pytest tests/test_profile.py -v --tb=short
-}
-
-run_likes() {
-    source .venv/bin/activate 2>/dev/null || true
-    echo "Running likes/dislikes tests..."
-    pytest tests/test_likes.py -v --tb=short
-}
-
 run_matches() {
     source .venv/bin/activate 2>/dev/null || true
     echo "Running match algorithm tests..."
     pytest tests/test_matches.py -v --tb=short
+}
+
+run_profile() {
+    source .venv/bin/activate 2>/dev/null || true
+    echo "Running match algorithm tests..."
+    pytest tests/test_profile.py -v --tb=short
 }
 
 run_notifications() {
@@ -93,12 +64,6 @@ run_search() {
     source .venv/bin/activate 2>/dev/null || true
     echo "Running search tests..."
     pytest tests/test_search.py -v --tb=short
-}
-
-run_integration() {
-    source .venv/bin/activate 2>/dev/null || true
-    echo "Running integration tests..."
-    pytest tests/test_integration.py -v --tb=short
 }
 
 run_fast() {
@@ -125,20 +90,8 @@ else
         --auth)
             run_auth
             ;;
-        --seed)
-            run_seed
-            ;;
-        --utils)
-            run_utils
-            ;;
-        --migrations)
-            run_migrations
-            ;;
         --profile)
             run_profile
-            ;;
-        --likes)
-            run_likes
             ;;
         --matches)
             run_matches
@@ -151,9 +104,6 @@ else
             ;;
         --search)
             run_search
-            ;;
-        --integration)
-            run_integration
             ;;
         --fast)
             run_fast

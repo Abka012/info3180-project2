@@ -59,7 +59,8 @@ Stores authentication and account lifecycle data.
 
 | Column | Type | Constraints | Purpose |
 |-------|------|-------------|---------|
-| `user_id` | Integer | PK | Internal user identifier |
+| `id` | Integer | PK | Internal user identifier |
+| `username` | String(80) | NOT NULL, UNIQUE, INDEX | Display name for login |
 | `email` | String(120) | NOT NULL, UNIQUE, INDEX | Login identity |
 | `password_hash` | String(128) | NOT NULL | Hashed password |
 | `is_verified` | Boolean | Default `False` | Email verification status |

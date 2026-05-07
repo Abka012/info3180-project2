@@ -6,13 +6,13 @@
       <!-- Success State -->
       <div
         v-if="showSuccess"
-        class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center"
+        class="bg-[var(--bg)] rounded-2xl shadow-xl p-8 text-center border border-[var(--border)]"
       >
         <div
-          class="w-20 h-20 mx-auto mb-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center"
+          class="w-20 h-20 mx-auto mb-6 rounded-full bg-[var(--surface)] flex items-center justify-center"
         >
           <svg
-            class="w-10 h-10 text-green-500"
+            class="w-10 h-10 text-[var(--success)]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -25,22 +25,22 @@
             />
           </svg>
         </div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+        <h1 class="text-2xl font-bold text-[var(--text-primary)] mb-3">
           Registration Successful!
         </h1>
-        <p class="text-gray-600 dark:text-gray-400 mb-6">
+        <p class="text-[var(--text-secondary)] mb-6">
           {{ successMessage }}
         </p>
         <div class="flex gap-3">
           <router-link
             to="/login"
-            class="flex-1 py-3.5 px-6 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl transition-all duration-300"
+            class="flex-1 py-3.5 px-6 bg-[var(--primary)] text-[var(--bg)] font-semibold rounded-xl transition-all duration-300"
           >
             Go to Login
           </router-link>
           <button
             :disabled="resendLoading"
-            class="flex-1 py-3.5 px-6 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="flex-1 py-3.5 px-6 bg-[var(--surface)] text-[var(--text-secondary)] font-semibold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             @click="handleResendVerification"
           >
             {{ resendLoading ? "Sending..." : "Resend Email" }}
@@ -49,18 +49,32 @@
       </div>
 
       <!-- Register Form -->
-      <div v-else class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+      <div
+        v-else
+        class="bg-[var(--bg)] rounded-2xl shadow-xl p-8 border border-[var(--border)]"
+      >
         <!-- Header -->
         <div class="text-center mb-8">
           <div
-            class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center"
+            class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center"
           >
-            <span class="text-white font-bold text-2xl">D</span>
+            <span class="text-[var(--bg)] font-bold text-2xl"
+              ><svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 100 100"
+                class="w-5 h-5"
+              >
+                <path
+                  d="M50 88.87C25.32 66.64 9.5 55.15 9.5 36.5 9.5 20.44 22.73 9.5 37.5 9.5c8.18 0 15.86 4.72 19.5 12.56C60.64 14.22 68.32 9.5 76.5 9.5 91.27 9.5 104.5 20.44 104.5 36.5c0 18.65-15.82 30.14-40.5 52.37z"
+                  fill="currentColor"
+                  transform="translate(-7, -7) scale(0.85)"
+                /></svg
+            ></span>
           </div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 class="text-2xl font-bold text-[var(--text-primary)] mb-2">
             Join DriftDater
           </h1>
-          <p class="text-gray-600 dark:text-gray-400">
+          <p class="text-[var(--text-secondary)]">
             Find your perfect match today
           </p>
         </div>
@@ -68,20 +82,45 @@
         <!-- Error Alert -->
         <div
           v-if="errors.general"
-          class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl"
+          class="mb-6 p-4 bg-[var(--surface)] border border-[var(--danger)] rounded-xl"
         >
-          <p class="text-sm text-red-600 dark:text-red-400">
+          <p class="text-sm text-[var(--danger)]">
             {{ errors.general[0] }}
           </p>
         </div>
 
         <!-- Form -->
         <form class="space-y-5" @submit.prevent="handleRegister">
+          <!-- Name -->
+          <div>
+            <label
+              for="name"
+              class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5"
+            >
+              Full Name
+            </label>
+            <input
+              id="name"
+              v-model="name"
+              type="text"
+              placeholder="Your Full Name"
+              :disabled="loading"
+              required
+              class="w-full px-4 py-3 bg-[var(--input-bg)] border border-[var(--border)] rounded-xl text-[var(--text-primary)] placeholder-[var(--placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              :class="{
+                'border-[var(--danger)]': errors.name,
+              }"
+            />
+            <p v-if="errors.name" class="mt-1.5 text-sm text-[var(--danger)]">
+              {{ errors.name }}
+            </p>
+          </div>
+
           <!-- Email -->
           <div>
             <label
               for="email"
-              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
+              class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5"
             >
               Email Address
             </label>
@@ -92,17 +131,17 @@
               placeholder="you@example.com"
               :disabled="loading"
               required
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full px-4 py-3 bg-[var(--input-bg)] border border-[var(--border)] rounded-xl text-[var(--text-primary)] placeholder-[var(--placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               :class="{
-                'border-red-500 dark:border-red-400': errors.email,
-                'border-green-500 dark:border-green-400': emailValid,
+                'border-[var(--danger)]': errors.email,
+                'border-[var(--success)]': emailValid,
               }"
               @blur="validateEmailField"
             />
-            <p v-if="errors.email" class="mt-1.5 text-sm text-red-500">
+            <p v-if="errors.email" class="mt-1.5 text-sm text-[var(--danger)]">
               {{ errors.email }}
             </p>
-            <p v-if="emailValid" class="mt-1.5 text-sm text-green-500">
+            <p v-if="emailValid" class="mt-1.5 text-sm text-[var(--success)]">
               Email looks good!
             </p>
           </div>
@@ -111,7 +150,7 @@
           <div>
             <label
               for="password"
-              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
+              class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5"
             >
               Password
             </label>
@@ -123,17 +162,16 @@
                 placeholder="Create a strong password"
                 :disabled="loading"
                 required
-                class="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                class="w-full px-4 py-3 pr-12 bg-[var(--input-bg)] border border-[var(--border)] rounded-xl text-[var(--text-primary)] placeholder-[var(--placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 :class="{
-                  'border-red-500 dark:border-red-400':
-                    errors.password && password,
-                  'border-green-500 dark:border-green-400': passwordValid,
+                  'border-[var(--danger)]': errors.password && password,
+                  'border-[var(--success)]': passwordValid,
                 }"
                 @input="validatePassword"
               />
               <button
                 type="button"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] transition-colors"
                 tabindex="-1"
                 @click="showPassword = !showPassword"
               >
@@ -189,9 +227,9 @@
               </p>
 
               <!-- Password Requirements -->
-              <div class="mt-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <div class="mt-2 p-3 bg-[var(--surface)] rounded-lg">
                 <p
-                  class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  class="text-xs font-medium text-[var(--text-secondary)] mb-2"
                 >
                   Password must contain:
                 </p>
@@ -200,8 +238,8 @@
                     class="flex items-center gap-2 text-xs"
                     :class="
                       passwordRequirements.length
-                        ? 'text-green-600 dark:text-green-400'
-                        : 'text-gray-500 dark:text-gray-400'
+                        ? 'text-[var(--success)]'
+                        : 'text-[var(--text-secondary)]'
                     "
                   >
                     <svg
@@ -234,8 +272,8 @@
                     class="flex items-center gap-2 text-xs"
                     :class="
                       passwordRequirements.uppercase
-                        ? 'text-green-600 dark:text-green-400'
-                        : 'text-gray-500 dark:text-gray-400'
+                        ? 'text-[var(--success)]'
+                        : 'text-[var(--text-secondary)]'
                     "
                   >
                     <svg
@@ -268,8 +306,8 @@
                     class="flex items-center gap-2 text-xs"
                     :class="
                       passwordRequirements.number
-                        ? 'text-green-600 dark:text-green-400'
-                        : 'text-gray-500 dark:text-gray-400'
+                        ? 'text-[var(--success)]'
+                        : 'text-[var(--text-secondary)]'
                     "
                   >
                     <svg
@@ -302,8 +340,8 @@
                     class="flex items-center gap-2 text-xs"
                     :class="
                       passwordRequirements.special
-                        ? 'text-green-600 dark:text-green-400'
-                        : 'text-gray-500 dark:text-gray-400'
+                        ? 'text-[var(--success)]'
+                        : 'text-[var(--text-secondary)]'
                     "
                   >
                     <svg
@@ -336,7 +374,10 @@
               </div>
             </div>
 
-            <p v-if="errors.password" class="mt-1.5 text-sm text-red-500">
+            <p
+              v-if="errors.password"
+              class="mt-1.5 text-sm text-[var(--danger)]"
+            >
               {{ errors.password }}
             </p>
           </div>
@@ -345,7 +386,7 @@
           <div>
             <label
               for="confirmPassword"
-              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
+              class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5"
             >
               Confirm Password
             </label>
@@ -356,20 +397,22 @@
               placeholder="Confirm your password"
               :disabled="loading"
               required
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full px-4 py-3 bg-[var(--input-bg)] border border-[var(--border)] rounded-xl text-[var(--text-primary)] placeholder-[var(--placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               :class="{
-                'border-red-500 dark:border-red-400': passwordMismatch,
-                'border-green-500 dark:border-green-400':
-                  passwordsMatch && confirmPassword,
+                'border-[var(--danger)]': passwordMismatch,
+                'border-[var(--success)]': passwordsMatch && confirmPassword,
               }"
               @input="validatePasswordMatch"
             />
-            <p v-if="passwordMismatch" class="mt-1.5 text-sm text-red-500">
+            <p
+              v-if="passwordMismatch"
+              class="mt-1.5 text-sm text-[var(--danger)]"
+            >
               {{ passwordMismatch }}
             </p>
             <p
               v-if="passwordsMatch && confirmPassword"
-              class="mt-1.5 text-sm text-green-500"
+              class="mt-1.5 text-sm text-[var(--success)]"
             >
               Passwords match!
             </p>
@@ -379,7 +422,7 @@
           <button
             type="submit"
             :disabled="loading"
-            class="w-full py-3.5 px-6 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            class="w-full py-3.5 px-6 bg-[var(--primary)] text-[var(--bg)] font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             <svg
               v-if="loading"
@@ -406,11 +449,11 @@
         </form>
 
         <!-- Login Link -->
-        <p class="text-center mt-8 text-gray-600 dark:text-gray-400">
+        <p class="text-center mt-8 text-[var(--text-secondary)]">
           Already have an account?
           <router-link
             to="/login"
-            class="font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+            class="font-medium text-[var(--text-primary)]"
           >
             Sign in
           </router-link>
@@ -432,6 +475,7 @@ import authService, {
 const router = useRouter();
 const { register } = useAuth();
 
+const name = ref(""); // Added for name input
 const email = ref("");
 const password = ref("");
 const confirmPassword = ref("");
@@ -463,9 +507,9 @@ const passwordMismatch = computed(() => {
 
 const strengthTextClass = computed(() => {
   const classes = {
-    weak: "text-red-600 dark:text-red-400",
-    medium: "text-amber-600 dark:text-amber-400",
-    strong: "text-green-600 dark:text-green-400",
+    weak: "text-[var(--danger)]",
+    medium: "text-[var(--warning)]",
+    strong: "text-[var(--success)]",
   };
   return classes[passwordStrength.value] || classes.weak;
 });
@@ -531,11 +575,11 @@ const getStrengthClass = (level) => {
   const activeClass =
     level <= currentLevel
       ? passwordStrength.value === "weak"
-        ? "bg-red-500"
+        ? "bg-[var(--danger)]"
         : passwordStrength.value === "medium"
-          ? "bg-amber-500"
-          : "bg-green-500"
-      : "bg-gray-200 dark:bg-gray-700";
+          ? "bg-[var(--warning)]"
+          : "bg-[var(--success)]"
+      : "bg-[var(--surface)]";
 
   return `${baseClass} ${activeClass}`;
 };
@@ -548,14 +592,42 @@ const handleRegister = async () => {
   validatePassword();
   validatePasswordMatch();
 
-  if (!emailValid.value || !passwordValid.value || !passwordsMatch.value) {
+  if (!name.value) {
+    // Added validation for name
+    errors.value.name = "Full name is required";
+  }
+
+  if (!emailValid.value || !passwordValid.value || !name.value) {
+    if (!passwordValid.value) {
+      // Get the specific password validation error message
+      const passwordCheckResult = passwordValidation.validate(password.value);
+      if (passwordCheckResult.errors.length > 0) {
+        errors.value.password = passwordCheckResult.errors[0];
+      } else {
+        // Fallback message if no specific error is found but password is invalid
+        errors.value.password = "Password is invalid.";
+      }
+    }
+    // Other field errors are already handled by their respective validation functions
+    return;
+  }
+
+  if (passwordMismatch.value) {
+    // Explicitly assign the mismatch error to the confirmPassword field
+    errors.value.confirmPassword = passwordMismatch.value;
+    return;
+  }
+
+  // If all checks pass, proceed with registration
+  if (!emailValid.value || !passwordValid.value || !name.value) {
     return;
   }
 
   loading.value = true;
 
   try {
-    await register(email.value, password.value);
+    // Pass name to the register function
+    await register(name.value, email.value, password.value);
     showSuccess.value = true;
     successMessage.value =
       "Please check your email inbox to verify your account before logging in.";

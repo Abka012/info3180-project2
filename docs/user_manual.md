@@ -6,6 +6,14 @@ A complete guide to using DriftDater dating application.
 
 ## 1. Getting Started
 
+### Welcome to DriftDater
+
+DriftDater is a modern dating application that helps you find meaningful connections.
+
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Home](images/light-home.png) | ![Home](images/dark-home.png) |
+
 ### Creating an Account
 
 1. Navigate to https://driftdater-frontend-7zt8.onrender.com
@@ -14,6 +22,13 @@ A complete guide to using DriftDater dating application.
    - Email address (must be valid to receive verification)
    - Password (secure password recommended)
 4. Click **Create Account**
+
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Sign Up](images/light-register.png) | ![Sign Up](images/dark-register.png) |
+
+### Verifying Your Email
+
 5. Check your email for the verification link
 
 ![Verification Email](images/verification-email.png)
@@ -25,7 +40,9 @@ A complete guide to using DriftDater dating application.
 3. Click **Login**
 4. You'll be redirected to the browse page
 
-![Login Form](images/login-form.png)
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Login](images/light-login.png) | ![Login](images/dark-login.png) |
 
 ### Logging Out
 
@@ -33,14 +50,11 @@ Click your profile avatar in the header, then select **Logout**.
 
 ---
 
-## 2. Profile Setup
-
-Your profile is what other users see. Make it stand out!
+## 2. Profile Management
 
 ### Creating Your Profile
 
-1. After first login, you'll be prompted to create your profile
-2. Fill in the following fields:
+After your first login, you'll be prompted to create your profile. Fill in the following fields:
 
 | Field | Description | Required |
 |-------|-------------|----------|
@@ -52,7 +66,9 @@ Your profile is what other users see. Make it stand out!
 | Occupation | Your job | No |
 | Relationship Goals | What you're looking for | Yes |
 
-![Profile Form](images/profile-form.png)
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Profile Form](images/light-profile-edit.png) | ![Profile Form](images/dark-profile-edit.png) |
 
 ### Setting Age Preferences
 
@@ -61,16 +77,12 @@ Set the age range of matches you're interested in:
 - **Minimum Age:** 18
 - **Maximum Age:** 99
 
-![Age Preferences](images/age-preferences.png)
-
 ### Uploading a Profile Picture
 
 1. Go to your profile settings
 2. Click **Upload Picture** or the camera icon
 3. Select an image from your device
 4. The image will be cropped to fit
-
-![Upload Picture](images/upload-picture.png)
 
 ### Profile Visibility
 
@@ -95,13 +107,14 @@ Select your preferred visibility in profile settings.
    - Name and age
    - Brief bio
    - Shared interests
-
 3. Use the action buttons:
    - **Like** - Express interest
    - **Dislike** - Skip the profile
    - **Pass** - Hide temporarily
 
-![Browse Page](images/browse-page.png)
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Browse](images/light-browse.png) | ![Browse](images/dark-browse.png) |
 
 ### Understanding the Matching Algorithm
 
@@ -116,18 +129,6 @@ DriftDater uses a scoring system (75 points max) to determine compatibility:
 
 **Minimum score: 50 points** to appear in your potential matches.
 
-![Match Score Explanation](images/match-score-explanation.png)
-
-### Mutual Matches
-
-When you like someone and they like you back, it's a mutual match!
-
-1. Go to **Matches** in the navigation
-2. You'll see all mutual matches sorted by most recent
-3. Click on a match to start messaging
-
-![Mutual Matches](images/mutual-matches.png)
-
 ### Filtering Matches
 
 Filter potential matches by:
@@ -138,7 +139,23 @@ Filter potential matches by:
 
 ---
 
-## 4. Messaging
+## 4. Matches
+
+### Mutual Matches
+
+When you like someone and they like you back, it's a mutual match!
+
+1. Go to **Matches** in the navigation
+2. You'll see all mutual matches sorted by most recent
+3. Click on a match to start messaging
+
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Matches](images/light-matches.png) | ![Matches](images/dark-matches.png) |
+
+---
+
+## 5. Messaging
 
 Only mutual matches can message each other.
 
@@ -149,7 +166,9 @@ Only mutual matches can message each other.
 3. Type your message in the chat box
 4. Press Enter or click **Send**
 
-![Chat Window](images/chat-window.png)
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Chat](images/light-chat.png) | ![Chat](images/dark-chat.png) |
 
 ### Message Limits
 
@@ -163,11 +182,13 @@ Only mutual matches can message each other.
 3. Unread message count shown on each conversation
 4. Most recent conversation appears at top
 
-![Conversations List](images/conversations-list.png)
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Conversations](images/light-conversations.png) | ![Conversations](images/dark-conversations.png) |
 
 ---
 
-## 5. Search & Bookmarks
+## 6. Search & Favorites
 
 ### Advanced Search
 
@@ -190,7 +211,9 @@ Only mutual matches can message each other.
 
 4. Click **Search** to see results
 
-![Search Page](images/search-page.png)
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Search](images/light-search.png) | ![Search](images/dark-search.png) |
 
 ### Filtering Applied Matches
 
@@ -201,10 +224,12 @@ Toggle **Hide Applied** to exclude profiles you've already liked, disliked, or p
 Save profiles you like for later:
 
 1. View a profile
-2. Click the **bookmark icon** 
+2. Click the **bookmark icon**
 3. Go to **Favorites** to view all bookmarked profiles
 
-![Bookmark Button](images/bookmark-button.png)
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Favorites](images/light-favorites.png) | ![Favorites](images/dark-favorites.png) |
 
 ### Managing Favorites
 
@@ -213,11 +238,9 @@ Save profiles you like for later:
 3. Click to view full profile
 4. Remove bookmarks with the same bookmark icon
 
-![Favorites Page](images/favorites-page.png)
-
 ---
 
-## 6. Notifications
+## 7. Notifications
 
 ### Real-Time Notifications
 
@@ -227,7 +250,9 @@ DriftDater sends instant notifications via WebSocket:
 - **New Like** - When someone likes your profile
 - **New Message** - When you receive a message
 
-![Notifications Panel](images/notifications-panel.png)
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Notifications](images/light-notifications.png) | ![Notifications](images/dark-notifications.png) |
 
 ### Notification Types
 
@@ -244,15 +269,13 @@ DriftDater sends instant notifications via WebSocket:
 3. Mark individual notifications as read
 4. **Mark All Read** to clear all
 
-![Notification Dropdown](images/notification-dropdown.png)
-
 ### Unread Count
 
 The number badge on the notification icon shows unread count.
 
 ---
 
-## 7. Quick Reference
+## 8. Quick Reference
 
 ### Navigation
 

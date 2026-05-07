@@ -144,7 +144,6 @@ const typing = ref(false);
 const typingUserName = ref("");
 const hasMore = ref(true);
 const messagesContainer = ref(null);
-const typingTimeout = ref(null);
 
 let typingSendTimeout = null;
 
@@ -267,27 +266,26 @@ onUnmounted(() => {
   height: calc(100vh - 8rem);
   max-width: 600px;
   margin: 0 auto;
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(10px);
+  background: var(--bg);
   border-radius: 1rem;
   overflow: hidden;
 }
 
-:global(.dark) .chat-container {
-  background: rgba(17, 24, 39, 0.5);
+[data-theme="dark"] .chat-container {
+  background: var(--surface);
 }
 
 .chat-header {
   display: flex;
   align-items: center;
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.8);
-  border-bottom: 1px solid rgba(20, 184, 166, 0.15);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
 }
 
-:global(.dark) .chat-header {
-  background: rgba(31, 41, 55, 0.9);
-  border-color: rgba(139, 92, 246, 0.2);
+[data-theme="dark"] .chat-header {
+  background: var(--surface);
+  border-color: var(--border);
 }
 
 .back-btn {
@@ -303,17 +301,17 @@ onUnmounted(() => {
 }
 
 .back-btn:hover {
-  background: rgba(20, 184, 166, 0.1);
+  background: var(--surface);
 }
 
 .back-icon {
   width: 20px;
   height: 20px;
-  color: #374151;
+  color: var(--text-primary);
 }
 
-:global(.dark) .back-icon {
-  color: #d1d5db;
+[data-theme="dark"] .back-icon {
+  color: var(--text-primary);
 }
 
 .chat-user-info {
@@ -328,7 +326,7 @@ onUnmounted(() => {
   border-radius: 50%;
   overflow: hidden;
   margin-right: 0.75rem;
-  border: 2px solid rgba(20, 184, 166, 0.3);
+  border: 2px solid var(--primary);
 }
 
 .avatar img {
@@ -340,8 +338,8 @@ onUnmounted(() => {
 .avatar-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #14b8a6, #8b5cf6);
-  color: white;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -352,17 +350,13 @@ onUnmounted(() => {
 .user-details h2 {
   font-size: 1rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
   margin: 0;
-}
-
-:global(.dark) .user-details h2 {
-  color: #f9fafb;
 }
 
 .typing-status {
   font-size: 0.75rem;
-  color: #14b8a6;
+  color: var(--primary);
   font-weight: 500;
 }
 
@@ -381,18 +375,18 @@ onUnmounted(() => {
 }
 
 .load-more-btn {
-  background: rgba(20, 184, 166, 0.1);
-  border: 1px solid rgba(20, 184, 166, 0.2);
+  background: var(--surface);
+  border: 1px solid var(--border);
   padding: 0.5rem 1rem;
   border-radius: 9999px;
   cursor: pointer;
   font-size: 0.8rem;
-  color: #14b8a6;
+  color: var(--primary);
   transition: all 0.2s;
 }
 
 .load-more-btn:hover {
-  background: rgba(20, 184, 166, 0.2);
+  background: var(--border);
 }
 
 .message {
@@ -415,22 +409,22 @@ onUnmounted(() => {
 }
 
 .sent .message-bubble {
-  background: linear-gradient(135deg, #14b8a6, #0d9488);
-  color: white;
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  color: var(--bg);
   border-bottom-right-radius: 0.4rem;
 }
 
 .received .message-bubble {
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(20, 184, 166, 0.15);
-  color: #1f2937;
+  background: var(--chat-other);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
   border-bottom-left-radius: 0.4rem;
 }
 
-:global(.dark) .received .message-bubble {
-  background: rgba(55, 65, 81, 0.8);
-  border-color: rgba(139, 92, 246, 0.2);
-  color: #f3f4f6;
+[data-theme="dark"] .received .message-bubble {
+  background: var(--chat-other);
+  border-color: var(--border);
+  color: var(--text-primary);
 }
 
 .message-bubble p {
@@ -450,11 +444,11 @@ onUnmounted(() => {
 }
 
 .received .message-meta {
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .status {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--bg);
 }
 
 .read-icon {
@@ -467,12 +461,8 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.8rem;
-}
-
-:global(.dark) .typing-indicator {
-  color: #9ca3af;
 }
 
 .typing-dots {
@@ -483,7 +473,7 @@ onUnmounted(() => {
 .typing-dots span {
   width: 6px;
   height: 6px;
-  background: #14b8a6;
+  background: var(--primary);
   border-radius: 50%;
   animation: typing 1.4s infinite ease-in-out;
 }
@@ -512,43 +502,43 @@ onUnmounted(() => {
 .message-form {
   display: flex;
   padding: 1rem;
-  border-top: 1px solid rgba(20, 184, 166, 0.15);
-  background: rgba(255, 255, 255, 0.8);
+  border-top: 1px solid var(--border);
+  background: var(--bg);
 }
 
-:global(.dark) .message-form {
-  background: rgba(31, 41, 55, 0.9);
-  border-color: rgba(139, 92, 246, 0.2);
+[data-theme="dark"] .message-form {
+  background: var(--surface);
+  border-color: var(--border);
 }
 
 .message-input {
   flex: 1;
   padding: 0.75rem 1rem;
-  border: 1px solid rgba(20, 184, 166, 0.25);
+  border: 1px solid var(--border);
   border-radius: 9999px;
   outline: none;
   font-size: 0.9rem;
-  background: rgba(255, 255, 255, 0.9);
-  color: #1f2937;
+  background: var(--bg);
+  color: var(--text-primary);
   transition: all 0.2s;
 }
 
-:global(.dark) .message-input {
-  background: rgba(55, 65, 81, 0.9);
-  border-color: rgba(139, 92, 246, 0.3);
-  color: #f3f4f6;
+[data-theme="dark"] .message-input {
+  background: var(--input-bg);
+  border-color: var(--border);
+  color: var(--text-primary);
 }
 
 .message-input:focus {
-  border-color: #14b8a6;
-  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--surface);
 }
 
 .send-btn {
   margin-left: 0.75rem;
   padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, #14b8a6, #0d9488);
-  color: white;
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  color: var(--bg);
   border: none;
   border-radius: 50%;
   cursor: pointer;
@@ -560,11 +550,11 @@ onUnmounted(() => {
 
 .send-btn:hover:not(:disabled) {
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4);
+  box-shadow: var(--shadow-md);
 }
 
 .send-btn:disabled {
-  background: #9ca3af;
+  background: var(--text-secondary);
   cursor: not-allowed;
 }
 
@@ -585,21 +575,21 @@ onUnmounted(() => {
 .loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(20, 184, 166, 0.2);
-  border-top-color: #14b8a6;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
   border-radius: 50%;
   margin-bottom: 0.75rem;
   animation: spin 0.8s linear infinite;
+}
+
+.loading p {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
 }
 
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
-}
-
-.loading p {
-  color: #6b7280;
-  font-size: 0.85rem;
 }
 </style>

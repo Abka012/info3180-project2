@@ -18,15 +18,9 @@ tests/                    # Backend tests (Python)
 ├── test_auth.py          # Authentication tests
 ├── test_profile.py       # Profile management tests
 ├── test_matches.py       # Match algorithm tests
-├── test_likes.py         # Likes/dislikes tests
 ├── test_messaging.py     # Messaging tests
 ├── test_notifications.py # Notification tests
 ├── test_search.py        # Search functionality tests
-├── test_integration.py   # Integration tests
-├── test_migrations.py    # Database migration tests
-├── test_seed.py          # Seed script tests
-├── test_utils.py         # Utility function tests
-└── test_views_utils.py   # View utility tests
 
 src/__tests__/            # Frontend unit tests (JavaScript)
 e2e/                      # End-to-end tests (Playwright)
@@ -60,12 +54,10 @@ Use the `run-tests.sh` script for running backend tests:
 ./run-tests.sh --auth          # Authentication tests
 ./run-tests.sh --profile       # Profile management tests
 ./run-tests.sh --matches       # Match algorithm tests
-./run-tests.sh --likes         # Likes/dislikes tests
 ./run-tests.sh --messaging     # Messaging tests
 ./run-tests.sh --notifications # Notification tests
 ./run-tests.sh --search        # Search tests
-./run-tests.sh --integration   # Integration tests
-./run-tests.sh --fast          # Core tests only (auth, seed, utils, migrations)
+./run-tests.sh --fast          # Core tests only
 ./run-tests.sh --coverage      # All tests with coverage report
 ```
 
@@ -232,4 +224,3 @@ Tests are automatically run on GitHub Actions when pushing to the repository. Th
 6. **Coverage**: Aim for high test coverage, especially for critical business logic
 7. **Mocking**: Use mocks for external dependencies (database, APIs, WebSocket)
 8. **Test Data**: Use test-specific configurations to avoid modifying production data
-
