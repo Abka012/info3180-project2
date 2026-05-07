@@ -41,6 +41,15 @@ def seed(screenshot_mode=False):
             db.session.add(user)
             users.append(user)
 
+        # user1 = User(
+        #         email="",
+        #         password_hash=bcrypt.generate_password_hash("password123").decode(
+        #             "utf-8"
+        #         ),
+        #         is_verified=True,
+        #     )
+        # db.session.add(user1)
+        # users.append(user1)
         db.session.commit()
 
         # 2. CREATE DETAILED PROFILES

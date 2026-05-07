@@ -904,6 +904,7 @@ import authService from "../services/authService";
 import profileService from "../services/profileService";
 import matchService from "../services/matchService";
 import { useAuth } from "../composables/useAuth";
+import ThemeToggle from '@/components/ThemeToggle.vue'
 
 const { isAuthenticated, user: currentUser } = useAuth();
 const hasProfile = ref(false);

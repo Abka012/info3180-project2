@@ -746,6 +746,7 @@ import notificationService from "../services/notificationService";
 import messageService from "../services/messageService";
 import socketService from "../services/socketService";
 import { useAuth } from "../composables/useAuth";
+import ThemeToggle from '@/components/ThemeToggle.vue'
 
 const router = useRouter();
 const { isAuthenticated, logout: authLogout } = useAuth();

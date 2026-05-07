@@ -341,6 +341,7 @@
 </template>
 
 <script setup>
+import ThemeToggle from '@/components/ThemeToggle.vue'
 const currentYear = new Date().getFullYear();
 </script>
 

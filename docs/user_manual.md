@@ -323,3 +323,87 @@ A: Look for the double-checkmark (✓✓) symbol.
 ---
 
 *For support, contact: support@driftdater.example.com*
+
+<!-- SCREENSHOT_TABLES_START -->
+# Screenshot Gallery
+
+## 404
+
+| Light Mode | Dark Mode |
+|------------|-------------|
+| ![Light](images/light-404.png) | ![Dark](images/dark-404.png) |
+
+## About
+
+| Light Mode | Dark Mode |
+|------------|-------------|
+| ![Light](images/light-about.png) | ![Dark](images/dark-about.png) |
+
+## Browse
+
+| Light Mode | Dark Mode |
+|------------|-------------|
+| ![Light](images/light-browse.png) | ![Dark](images/dark-browse.png) |
+
+## Chat
+
+| Light Mode | Dark Mode |
+|------------|-------------|
+| ![Light](images/light-chat.png) | ![Dark](images/dark-chat.png) |
+
+## Conversations
+
+| Light Mode | Dark Mode |
+|------------|-------------|
+| ![Light](images/light-conversations.png) | ![Dark](images/dark-conversations.png) |
+
+## Favorites
+
+| Light Mode | Dark Mode |
+|------------|-------------|
+| ![Light](images/light-favorites.png) | ![Dark](images/dark-favorites.png) |
+
+## Home
+
+| Light Mode | Dark Mode |
+|------------|-------------|
+| ![Light](images/light-home.png) | ![Dark](images/dark-home.png) |
+
+## Login
+
+| Light Mode | Dark Mode |
+|------------|-------------|
+| ![Light](images/light-login.png) | ![Dark](images/dark-login.png) |
+
+## Matches
+
+| Light Mode | Dark Mode |
+|------------|-------------|
+| ![Light](images/light-matches.png) | ![Dark](images/dark-matches.png) |
+
+## Notifications
+
+| Light Mode | Dark Mode |
+|------------|-------------|
+| ![Light](images/light-notifications.png) | ![Dark](images/dark-notifications.png) |
+
+## Profile Edit
+
+| Light Mode | Dark Mode |
+|------------|-------------|
+| ![Light](images/light-profile-edit.png) | ![Dark](images/dark-profile-edit.png) |
+
+## Register
+
+| Light Mode | Dark Mode |
+|------------|-------------|
+| ![Light](images/light-register.png) | ![Dark](images/dark-register.png) |
+
+## Search
+
+| Light Mode | Dark Mode |
+|------------|-------------|
+| ![Light](images/light-search.png) | ![Dark](images/dark-search.png) |
+
+
+<!-- SCREENSHOT_TABLES_END -->
