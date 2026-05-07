@@ -73,16 +73,16 @@ onMounted(verifyEmail);
 }
 
 .verify-card {
-  background: white;
+  background: var(--bg);
   padding: 50px;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   text-align: center;
   max-width: 400px;
 }
 
 .loading {
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 18px;
 }
 
@@ -99,13 +99,13 @@ onMounted(verifyEmail);
 }
 
 .success .icon {
-  background: #e8f5e9;
-  color: #4caf50;
+  background: var(--color-surface);
+  color: var(--color-success);
 }
 
 .error .icon {
-  background: #ffebee;
-  color: #e53935;
+  background: var(--surface);
+  color: var(--color-primary);
 }
 
 h2 {
@@ -113,15 +113,15 @@ h2 {
 }
 
 .success h2 {
-  color: #4caf50;
+  color: var(--color-success);
 }
 
 .error h2 {
-  color: #e53935;
+  color: var(--color-primary);
 }
 
 p {
-  color: #666;
+  color: var(--color-text-secondary);
   margin-bottom: 30px;
   line-height: 1.6;
 }
@@ -129,9 +129,8 @@ p {
 .btn-primary {
   display: inline-block;
   padding: 14px 30px;
-  background: #e91e63;
-  color: white;
-  text-decoration: none;
+  background: var(--color-danger);
+  color: var(--color-text);
   border-radius: 6px;
   font-weight: 600;
 }

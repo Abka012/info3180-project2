@@ -3,10 +3,10 @@
     <label
       v-if="label"
       :for="id"
-      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
+      class="block text-sm font-medium text-[var(--text-secondary)] text-[var(--text-primary)] mb-1.5"
     >
       {{ label }}
-      <span v-if="required" class="text-red-500">*</span>
+      <span v-if="required" class="text-[var(--danger)]">*</span>
     </label>
     <div class="relative">
       <input
@@ -22,6 +22,7 @@
           { 'pl-10': icon },
           { 'pr-10': showPasswordToggle || $slots.suffix },
         ]"
+        class="border-[var(--border)] focus:border-[var(--primary)] focus:shadow-[0_0_0_3px_var(--primary)]"
         @input="$emit('update:modelValue', $event.target.value)"
         @blur="$emit('blur', $event)"
       />
@@ -31,7 +32,7 @@
       >
         <slot name="icon">
           <svg
-            class="h-5 w-5 text-gray-400"
+            class="h-5 w-5 text-[var(--text-secondary)]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -53,7 +54,7 @@
       >
         <svg
           v-if="!showPassword"
-          class="h-5 w-5 text-gray-400"
+          class="h-5 w-5 text-[var(--text-secondary)]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -73,7 +74,7 @@
         </svg>
         <svg
           v-else
-          class="h-5 w-5 text-gray-400"
+          class="h-5 w-5 text-[var(--text-secondary)]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -93,8 +94,8 @@
         <slot name="suffix" />
       </div>
     </div>
-    <p v-if="error" class="mt-1.5 text-sm text-red-500">{{ error }}</p>
-    <p v-else-if="hint" class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+    <p v-if="error" class="mt-1.5 text-sm text-[var(--danger)]">{{ error }}</p>
+    <p v-else-if="hint" class="mt-1.5 text-sm text-[var(--text-secondary)]">
       {{ hint }}
     </p>
   </div>

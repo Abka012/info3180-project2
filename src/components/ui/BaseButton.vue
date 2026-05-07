@@ -59,23 +59,24 @@ const variantClasses = computed(
   () =>
     ({
       primary:
-        "bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500",
+        "bg-[var(--primary)] text-[var(--bg)] hover:bg-[color-mix(in srgb,var(--primary),var(--text-primary) 15%)] focus:ring-[var(--primary)]",
       secondary:
-        "bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600",
+        "bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[color-mix(in srgb,var(--surface),var(--text-primary) 5%)] focus:ring-[var(--border)]",
       outline:
-        "border-2 border-primary-500 text-primary-600 hover:bg-primary-50 focus:ring-primary-500 dark:border-primary-400 dark:text-primary-400 dark:hover:bg-primary-900/20",
+        "border-2 border-[var(--primary)] text-[var(--text-primary)] hover:bg-[color-mix(in srgb,var(--primary),transparent 80%)] focus:ring-[var(--primary)]",
       ghost:
-        "text-gray-600 hover:bg-gray-100 focus:ring-gray-500 dark:text-gray-300 dark:hover:bg-gray-800",
-      danger: "bg-red-500 text-white hover:bg-red-600 focus:ring-red-500",
+        "text-[var(--text-secondary)] hover:bg-[color-mix(in srgb,var(--surface),var(--text-primary) 5%)] focus:ring-[var(--border)]",
+      danger:
+        "bg-[var(--danger)] text-[var(--bg)] hover:bg-[color-mix(in srgb,var(--danger),var(--text-primary) 15%)] focus:ring-[var(--danger)]",
     })[props.variant],
 );
 
 const sizeClasses = computed(
   () =>
     ({
-      sm: "px-3 py-1.5 text-sm",
-      md: "px-4 py-2",
-      lg: "px-6 py-3 text-lg",
+      sm: "px-3 py-1.5 text-sm rounded-[var(--radius-sm)]",
+      md: "px-4 py-2 rounded-[var(--radius-md)]",
+      lg: "px-6 py-3 text-lg rounded-[var(--radius-md)]",
     })[props.size],
 );
 </script>

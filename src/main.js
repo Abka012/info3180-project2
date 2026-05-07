@@ -13,43 +13,6 @@ import "./assets/base.css";
 
 const app = createApp(App);
 
-/**
- * Initialize dark mode based on user preference or system settings
- *
- * Checks localStorage for saved theme preference, falls back to system preference
- * if no saved preference exists.
- */
-const initDarkMode = () => {
-  const savedTheme = localStorage.getItem("theme");
-
-  if (savedTheme === "dark") {
-    document.documentElement.classList.add("dark");
-  } else if (savedTheme === "light") {
-    document.documentElement.classList.remove("dark");
-  } else {
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      document.documentElement.classList.add("dark");
-    }
-  }
-};
-
-initDarkMode();
-
-/**
- * Listen for system dark mode preference changes
- *
- * Updates the dark mode setting when the system preference changes,
- * but only if the user hasn't explicitly set a theme preference.
- */
-window
-  .matchMedia("(prefers-color-scheme: dark)")
-  .addEventListener("change", (e) => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "system" || !savedTheme) {
-      document.documentElement.classList.toggle("dark", e.matches);
-    }
-  });
-
 app.use(router);
 
 /**

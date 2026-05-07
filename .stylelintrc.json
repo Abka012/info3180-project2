@@ -1,0 +1,19 @@
+{
+  "plugins": ["@double-great/stylelint-a11y"],
+  "rules": {
+    "color-no-hex": true,
+    "color-named": "never",
+    "property-no-unknown": [
+      true,
+      {
+        "ignoreProperties": [
+          "box-shadow",
+          "background-clip",
+          "-webkit-background-clip",
+          "-webkit-text-fill-color"
+        ]
+      }
+    ],
+    "@double-great/stylelint-a11y/no-outline-none": true
+  }
+}

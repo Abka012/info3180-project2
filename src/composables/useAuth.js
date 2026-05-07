@@ -28,12 +28,12 @@ async function login(email, password, rememberMe = false) {
   }
 }
 
-async function register(email, password) {
+async function register(name, email, password) {
   isLoading.value = true;
   authError.value = null;
 
   try {
-    const response = await authService.register(email, password);
+    const response = await authService.register(name, email, password);
     return response;
   } catch (error) {
     authError.value = error.message || "Registration failed";

@@ -10,8 +10,10 @@ from app.models import User, Profile
 def create_user(app, email, is_verified=True, password="TestPass123!"):
     """Create a test user with the given email and verification status."""
     with app.app_context():
+        username = email.split("@")[0]
         user = User(
             email=email,
+            username=username,
             password_hash=bcrypt.generate_password_hash(password).decode("utf-8"),
             is_verified=is_verified,
         )

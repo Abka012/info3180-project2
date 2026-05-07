@@ -4,19 +4,19 @@
       v-if="src"
       :src="src"
       :alt="name"
-      class="rounded-full object-cover bg-gray-200 dark:bg-gray-700"
+      class="rounded-full object-cover bg-[var(--surface)]"
       :class="sizeClass"
     />
     <div
       v-else
-      class="rounded-full bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center text-white font-medium"
+      class="rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center text-[var(--text-primary)] font-medium"
       :class="sizeClass"
     >
       {{ initials }}
     </div>
     <span
       v-if="showOnline && online"
-      class="absolute bottom-0 right-0 block rounded-full ring-2 ring-white dark:ring-gray-800"
+      class="absolute bottom-0 right-0 block rounded-full ring-2 ring-[var(--bg)] ring-[var(--border)]"
       :class="onlineIndicatorClass"
     />
   </div>
@@ -61,11 +61,11 @@ const sizeClass = computed(
 const onlineIndicatorClass = computed(
   () =>
     ({
-      xs: "w-2 h-2 bg-green-500",
-      sm: "w-2.5 h-2.5 bg-green-500",
-      md: "w-3 h-3 bg-green-500",
-      lg: "w-3.5 h-3.5 bg-green-500",
-      xl: "w-4 h-4 bg-green-500",
+      xs: "w-2 h-2 bg-[var(--success)]",
+      sm: "w-2.5 h-2.5 bg-[var(--success)]",
+      md: "w-3 h-3 bg-[var(--success)]",
+      lg: "w-3.5 h-3.5 bg-[var(--success)]",
+      xl: "w-4 h-4 bg-[var(--success)]",
     })[props.size],
 );
 </script>

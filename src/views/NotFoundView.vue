@@ -82,18 +82,22 @@
 
 .illustration {
   margin-bottom: 2rem;
-  color: #14b8a6;
+  color: var(--color-primary);
   opacity: 0.8;
 }
 
-:global(.dark) .illustration {
-  color: #8b5cf6;
+[data-theme="dark"] .illustration {
+  color: var(--color-accent-500);
 }
 
 h1 {
   font-size: 6rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #14b8a6, #8b5cf6);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-accent)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -104,22 +108,22 @@ h1 {
 h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--color-text);
   margin-bottom: 0.75rem;
 }
 
-:global(.dark) h2 {
-  color: #f9fafb;
+[data-theme="dark"] h2 {
+  color: var(--color-text);
 }
 
 p {
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin-bottom: 2rem;
   line-height: 1.6;
 }
 
-:global(.dark) p {
-  color: #9ca3af;
+[data-theme="dark"] p {
+  color: var(--color-text-secondary);
 }
 
 .actions {
@@ -134,9 +138,12 @@ p {
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 1.5rem;
-  background: linear-gradient(135deg, #14b8a6, #0d9488);
-  color: white;
-  text-decoration: none;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-light),
+    var(--color-primary)
+  );
+  color: var(--color-text);
   border-radius: 0.75rem;
   font-weight: 600;
   transition: all 0.2s;
@@ -146,7 +153,7 @@ p {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(20, 184, 166, 0.4);
+  box-shadow: 0 8px 25px var(--surface);
 }
 
 .btn-secondary {
@@ -154,9 +161,8 @@ p {
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 1.5rem;
-  background: #f3f4f6;
-  color: #374151;
-  text-decoration: none;
+  background: var(--color-surface);
+  color: var(--color-text);
   border-radius: 0.75rem;
   font-weight: 600;
   transition: all 0.2s;
@@ -164,16 +170,16 @@ p {
   cursor: pointer;
 }
 
-:global(.dark) .btn-secondary {
-  background: #374151;
-  color: #f9fafb;
+[data-theme="dark"] .btn-secondary {
+  background: var(--color-card);
+  color: var(--color-text);
 }
 
 .btn-secondary:hover {
-  background: #e5e7eb;
+  background: var(--color-surface);
 }
 
-:global(.dark) .btn-secondary:hover {
-  background: #4b5563;
+[data-theme="dark"] .btn-secondary:hover {
+  background: var(--color-card);
 }
 </style>

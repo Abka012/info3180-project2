@@ -2,30 +2,45 @@
   <div
     class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12"
   >
+
     <div class="w-full max-w-md">
       <!-- Card -->
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+      <div
+        class="bg-[var(--bg)] rounded-2xl shadow-xl p-8 border border-[var(--border)]"
+      >
         <!-- Header -->
         <div class="text-center mb-8">
           <div
-            class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center"
+            class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center"
           >
-            <span class="text-white font-bold text-2xl">D</span>
+            <svg
+              class="w-8 h-8 text-[var(--bg)]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+              />
+            </svg>
           </div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Welcome Back
+          <h1 class="text-2xl font-bold text-[var(--text-primary)] mb-2">
+            Sign In
           </h1>
-          <p class="text-gray-600 dark:text-gray-400">
-            Sign in to continue to DriftDater
+          <p class="text-[var(--text-secondary)] mb-8">
+            Welcome back! Please sign in to continue.
           </p>
         </div>
 
-        <!-- Success Alert -->
+        <!-- Success Message -->
         <div
           v-if="successMessage"
-          class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl"
+          class="mb-6 p-4 bg-[var(--surface)] border border-[var(--success)] rounded-xl"
         >
-          <p class="text-sm text-green-600 dark:text-green-400">
+          <p class="text-sm text-[var(--success)]">
             {{ successMessage }}
           </p>
         </div>
@@ -33,11 +48,11 @@
         <!-- Error Alert -->
         <div
           v-if="error"
-          class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl"
+          class="mb-6 p-4 bg-[var(--surface)] border border-[var(--danger)] rounded-xl"
         >
           <div class="flex items-start gap-3">
             <svg
-              class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5"
+              class="w-5 h-5 text-[var(--danger)] flex-shrink-0 mt-0.5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -50,12 +65,12 @@
               />
             </svg>
             <div class="flex-1">
-              <p class="text-sm text-red-600 dark:text-red-400">
+              <p class="text-sm text-[var(--danger)]">
                 {{ error }}
               </p>
               <button
                 v-if="showResendVerification"
-                class="mt-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 underline"
+                class="mt-2 text-sm font-medium text-[var(--text-primary)]"
                 @click="handleResendVerification"
               >
                 Resend verification email
@@ -70,7 +85,7 @@
           <div>
             <label
               for="email"
-              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
+              class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5"
             >
               Email Address
             </label>
@@ -81,12 +96,12 @@
               placeholder="you@example.com"
               :disabled="loading"
               required
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full px-4 py-3 bg-[var(--input-bg)] border border-[var(--border)] rounded-xl text-[var(--text-primary)] placeholder-[var(--placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               :class="{
-                'border-red-500 dark:border-red-400': errors.email,
+                'border-[var(--danger)]': errors.email,
               }"
             />
-            <p v-if="errors.email" class="mt-1.5 text-sm text-red-500">
+            <p v-if="errors.email" class="mt-1.5 text-sm text-[var(--danger)]">
               {{ errors.email }}
             </p>
           </div>
@@ -95,7 +110,7 @@
           <div>
             <label
               for="password"
-              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
+              class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5"
             >
               Password
             </label>
@@ -107,14 +122,14 @@
                 placeholder="Enter your password"
                 :disabled="loading"
                 required
-                class="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                class="w-full px-4 py-3 pr-12 bg-[var(--input-bg)] border border-[var(--border)] rounded-xl text-[var(--text-primary)] placeholder-[var(--placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 :class="{
-                  'border-red-500 dark:border-red-400': errors.password,
+                  'border-[var(--danger)]': errors.password,
                 }"
               />
               <button
                 type="button"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] transition-colors"
                 tabindex="-1"
                 @click="showPassword = !showPassword"
               >
@@ -154,7 +169,10 @@
                 </svg>
               </button>
             </div>
-            <p v-if="errors.password" class="mt-1.5 text-sm text-red-500">
+            <p
+              v-if="errors.password"
+              class="mt-1.5 text-sm text-[var(--danger)]"
+            >
               {{ errors.password }}
             </p>
           </div>
@@ -166,15 +184,15 @@
                 v-model="rememberMe"
                 type="checkbox"
                 :disabled="loading"
-                class="w-4 h-4 text-primary-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="w-4 h-4 text-[var(--primary)] bg-[var(--input-bg)] border-[var(--border)] rounded focus:ring-[var(--primary)] focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed"
               />
-              <span class="ml-2 text-sm text-gray-700 dark:text-gray-300"
+              <span class="ml-2 text-sm text-[var(--text-secondary)]"
                 >Remember me</span
               >
             </label>
             <button
               type="button"
-              class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+              class="text-sm font-medium text-[var(--text-primary)] transition-colors"
               @click="showForgotPasswordModal = true"
             >
               Forgot password?
@@ -185,7 +203,7 @@
           <button
             type="submit"
             :disabled="loading"
-            class="w-full py-3.5 px-6 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            class="w-full py-3.5 px-6 bg-[var(--primary)] text-[var(--bg)] font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             <svg
               v-if="loading"
@@ -214,21 +232,21 @@
         <!-- Divider -->
         <div class="relative my-8">
           <div class="absolute inset-0 flex items-center">
-            <div
-              class="w-full border-t border-gray-200 dark:border-gray-700"
-            ></div>
+            <div class="w-full border-t border-[var(--border)]"></div>
           </div>
           <div class="relative flex justify-center text-sm">
-            <span class="px-4 bg-white dark:bg-gray-800 text-gray-500">or</span>
+            <span class="px-4 bg-[var(--bg)] text-[var(--text-secondary)]"
+              >or</span
+            >
           </div>
         </div>
 
         <!-- Register Link -->
-        <p class="text-center text-gray-600 dark:text-gray-400">
+        <p class="text-center text-[var(--text-secondary)]">
           Don't have an account?
           <router-link
             to="/register"
-            class="font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+            class="font-medium text-[var(--text-primary)]"
           >
             Sign up free
           </router-link>
@@ -239,19 +257,19 @@
     <!-- Forgot Password Modal -->
     <div
       v-if="showForgotPasswordModal"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--overlay)] backdrop-blur-sm"
       @click.self="showForgotPasswordModal = false"
     >
       <div
-        class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-md"
+        class="bg-[var(--bg)] rounded-2xl shadow-2xl p-6 w-full max-w-md border border-[var(--border)]"
         @click.stop
       >
         <div class="text-center mb-6">
           <div
-            class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center"
+            class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center"
           >
             <svg
-              class="w-8 h-8 text-white"
+              class="w-8 h-8 text-[var(--bg)]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -264,28 +282,28 @@
               />
             </svg>
           </div>
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          <h2 class="text-xl font-bold text-[var(--text-primary)] mb-2">
             Reset Password
           </h2>
-          <p class="text-gray-600 dark:text-gray-400 text-sm">
+          <p class="text-[var(--text-secondary)] text-sm">
             Enter your email and we'll send you a link to reset your password
           </p>
         </div>
 
         <div
           v-if="forgotPasswordSuccess"
-          class="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl"
+          class="mb-4 p-4 bg-[var(--surface)] border border-[var(--success)] rounded-xl"
         >
-          <p class="text-sm text-green-600 dark:text-green-400">
+          <p class="text-sm text-[var(--success)]">
             Password reset link sent! Check your email inbox.
           </p>
         </div>
 
         <div
           v-if="forgotPasswordError"
-          class="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl"
+          class="mb-4 p-4 bg-[var(--surface)] border border-[var(--danger)] rounded-xl"
         >
-          <p class="text-sm text-red-600 dark:text-red-400">
+          <p class="text-sm text-[var(--danger)]">
             {{ forgotPasswordError }}
           </p>
         </div>
@@ -294,7 +312,7 @@
           <div>
             <label
               for="resetEmail"
-              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
+              class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5"
             >
               Email Address
             </label>
@@ -305,7 +323,7 @@
               placeholder="you@example.com"
               :disabled="forgotPasswordLoading"
               required
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full px-4 py-3 bg-[var(--input-bg)] border border-[var(--border)] rounded-xl text-[var(--text-primary)] placeholder-[var(--placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -313,7 +331,7 @@
             <button
               type="button"
               :disabled="forgotPasswordLoading"
-              class="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex-1 py-3 px-4 bg-[var(--surface)] text-[var(--text-secondary)] font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               @click="showForgotPasswordModal = false"
             >
               Cancel
@@ -321,7 +339,7 @@
             <button
               type="submit"
               :disabled="forgotPasswordLoading"
-              class="flex-1 py-3 px-4 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-medium rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              class="flex-1 py-3 px-4 bg-[var(--primary)] text-[var(--bg)] font-medium rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               <svg
                 v-if="forgotPasswordLoading"
@@ -357,6 +375,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuth } from "../composables/useAuth";
 import authService, { validateEmail } from "../services/authService";
+import ThemeToggle from '@/components/ThemeToggle.vue'
 
 const router = useRouter();
 const route = useRoute();

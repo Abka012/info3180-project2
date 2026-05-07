@@ -11,9 +11,14 @@ import os
 from flask import Flask, current_app, send_from_directory
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
+
+# Removed duplicate LoginManager import and added auth import
 
 from app.config import Config
 
@@ -21,6 +26,10 @@ db = SQLAlchemy()
 bcrypt = Bcrypt()
 socketio = SocketIO()
 migrate = Migrate()
+login_manager = LoginManager()  # Initialized at module level
+limiter = Limiter(
+    key_func=get_remote_address, default_limits=["200 per day", "50 per hour"]
+)
 
 
 # Store user sessions for WebSocket
@@ -64,6 +73,13 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
+    limiter.init_app(app)
+    login_manager.init_app(app)  # Initialize LoginManager with the app
+    login_manager.login_view = "login"  # Set the login view route name
+    login_manager.login_message_category = (
+        "info"  # Set message category for flash messages
+    )
+
     socketio.init_app(
         app,
         cors_allowed_origins=[
@@ -94,12 +110,21 @@ def create_app(config_class=Config):
         return send_from_directory(upload_folder, filename)
 
     # Register blueprints
-    from app import matches, messages, notifications, views
+    from app import (
+        matches,
+        messages,
+        notifications,
+        views,
+        auth,
+        profile,
+    )  # Import auth module
 
     app.register_blueprint(views.bp)
     app.register_blueprint(matches.bp)
     app.register_blueprint(notifications.bp_notifications)
     app.register_blueprint(messages.bp_messages)
+    app.register_blueprint(auth.bp)  # Register auth blueprint
+    app.register_blueprint(profile.bp)  # Register profile blueprint
 
     # Set socket emit function
     from app.matches import set_socket_emit
