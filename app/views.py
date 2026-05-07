@@ -15,6 +15,7 @@ from app.models import (
     Notification,
     Match,
     Like,
+    Profile,
 )  # Import necessary models
 from app import (
     db,
@@ -86,8 +87,6 @@ def verify_token(token, token_type="auth"):
     except jwt.InvalidTokenError:
         return None
 
-
-from app.email_utils import send_email
 
 def get_user_by_public_id(public_id):
     return User.query.filter_by(public_id=public_id).first()
@@ -280,7 +279,9 @@ def edit_profile():
 
         profile = Profile.query.filter_by(user_id=current_user.id).first()
         if not profile:
-            profile = Profile(user_id=current_user.id, name=current_user.username, age=age)
+            profile = Profile(
+                user_id=current_user.id, name=current_user.username, age=age
+            )
             db.session.add(profile)
         else:
             profile.age = age
@@ -295,16 +296,21 @@ def edit_profile():
                 ext = file.filename.rsplit(".", 1)[1].lower()
                 unique_filename = f"{uuid.uuid4()}.{ext}"
                 filename = secure_filename(unique_filename)
-                
+
                 profile_pics_folder = current_app.config.get("PROFILE_PICS_FOLDER")
                 os.makedirs(profile_pics_folder, exist_ok=True)
-                
+
                 filepath = os.path.join(profile_pics_folder, filename)
                 file.save(filepath)
-                
-                if profile.profile_picture and profile.profile_picture != "default_avatar.png":
+
+                if (
+                    profile.profile_picture
+                    and profile.profile_picture != "default_avatar.png"
+                ):
                     try:
-                        old_path = os.path.join(profile_pics_folder, profile.profile_picture)
+                        old_path = os.path.join(
+                            profile_pics_folder, profile.profile_picture
+                        )
                         if os.path.exists(old_path):
                             os.remove(old_path)
                     except OSError as e:

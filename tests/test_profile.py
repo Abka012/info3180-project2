@@ -143,6 +143,7 @@ class TestGetProfile:
         # Delete the auto-created profile
         with app.app_context():
             from app.models import Profile
+
             Profile.query.filter_by(user_id=verified_user["user_id"]).delete()
             db.session.commit()
 
@@ -185,6 +186,7 @@ class TestUpdateProfile:
         # Delete the auto-created profile
         with app.app_context():
             from app.models import Profile
+
             Profile.query.filter_by(user_id=verified_user["user_id"]).delete()
             db.session.commit()
 
@@ -267,12 +269,12 @@ class TestViewOtherProfile:
             if not profile:
                 profile = Profile(user_id=verified_user["user_id"])
                 db.session.add(profile)
-            
+
             profile.name = "Private Owner"
             profile.age = 25
             profile.interests = ["reading", "writing", "coding", "gaming", "music"]
             profile.visibility = False
-            
+
             db.session.commit()
 
         response = client.get(
@@ -393,6 +395,7 @@ class TestProfilePictureUpload:
         # Delete the auto-created profile
         with app.app_context():
             from app.models import Profile
+
             Profile.query.filter_by(user_id=verified_user["user_id"]).delete()
             db.session.commit()
 

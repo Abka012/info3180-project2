@@ -69,9 +69,11 @@ def calculate_match_score(current_user_profile, other_profile):
     # Shared interests (0-20 points, max 2 interests)
     user_interests = current_user_profile.interests_list
     other_interests = other_profile.interests_list
-    
-    current_app.logger.info(f"DEBUG: Comparing lists - {user_interests} vs {other_interests}")
-    
+
+    current_app.logger.info(
+        f"DEBUG: Comparing lists - {user_interests} vs {other_interests}"
+    )
+
     if user_interests and other_interests:
         shared = set(user_interests) & set(other_interests)
         interest_points = min(len(shared), 2) * 10
@@ -85,11 +87,14 @@ def calculate_match_score(current_user_profile, other_profile):
         current_app.logger.info("DEBUG: Interests list empty for one or both profiles.")
 
     # Relationship goal (0-20 points)
-    current_app.logger.info(f"DEBUG: Comparing goals - '{current_user_profile.relationship_goal}' vs '{other_profile.relationship_goal}'")
+    current_app.logger.info(
+        f"DEBUG: Comparing goals - '{current_user_profile.relationship_goal}' vs '{other_profile.relationship_goal}'"
+    )
     if (
         current_user_profile.relationship_goal
         and other_profile.relationship_goal
-        and str(current_user_profile.relationship_goal).strip() == str(other_profile.relationship_goal).strip()
+        and str(current_user_profile.relationship_goal).strip()
+        == str(other_profile.relationship_goal).strip()
     ):
         score += 20
         details["goal_match"] = True
@@ -180,7 +185,7 @@ def get_potential_matches():
     # Get potential matches (public profiles, not interacted, not matched)
     query = Profile.query.filter(
         Profile.user_id != user.user_id,
-        Profile.visibility == True,
+        Profile.visibility,
         ~Profile.user_id.in_(interacted_ids) if interacted_ids else True,
         ~Profile.user_id.in_(match_ids) if match_ids else True,
     )
@@ -405,12 +410,16 @@ def get_match_score(to_user_id):
     if not other_profile:
         return jsonify({"error": "User not found"}), 404
 
-    print(f"DEBUG endpoint: Current User {user.user_id} interests={current_profile.interests_list}, goal={current_profile.relationship_goal}")
-    print(f"DEBUG endpoint: Other User {to_user_id} interests={other_profile.interests_list}, goal={other_profile.relationship_goal}")
+    print(
+        f"DEBUG endpoint: Current User {user.user_id} interests={current_profile.interests_list}, goal={current_profile.relationship_goal}"
+    )
+    print(
+        f"DEBUG endpoint: Other User {to_user_id} interests={other_profile.interests_list}, goal={other_profile.relationship_goal}"
+    )
 
     result = calculate_match_score(current_profile, other_profile)
     print(f"DEBUG endpoint: Score result: {result}")
-    
+
     # If calculate_match_score returns just a score (int) for non-visible profiles, handle that.
     if isinstance(result, (int, float)):
         result = {"score": result, "details": {}}

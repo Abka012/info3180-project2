@@ -95,7 +95,7 @@ def create_app(config_class=Config):
         upload_folder = app.config.get("UPLOAD_FOLDER", "./uploads")
         if not os.path.isabs(upload_folder):
             upload_folder = os.path.join(app.root_path, "..", upload_folder)
-        
+
         profile_pics_folder = os.path.join(upload_folder, "profile_pics")
         os.makedirs(profile_pics_folder, exist_ok=True)
         app.logger.info(f"Storage directories ensured at: {upload_folder}")
@@ -115,16 +115,16 @@ def create_app(config_class=Config):
         upload_folder = current_app.config.get("UPLOAD_FOLDER", "./uploads")
         if not os.path.isabs(upload_folder):
             upload_folder = os.path.join(app.root_path, "..", upload_folder)
-        
+
         # Check if file exists in the direct path
         if os.path.exists(os.path.join(upload_folder, filename)):
             return send_from_directory(upload_folder, filename)
-            
+
         # If not found, check if it's in the profile_pics subdirectory
         profile_pics_folder = os.path.join(upload_folder, "profile_pics")
         if os.path.exists(os.path.join(profile_pics_folder, filename)):
             return send_from_directory(profile_pics_folder, filename)
-            
+
         # Fallback to direct path (will 404 if missing)
         return send_from_directory(upload_folder, filename)
 

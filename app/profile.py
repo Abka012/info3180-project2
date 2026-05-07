@@ -93,9 +93,13 @@ def create_profile():
         profile = Profile(user_id=user.user_id)
         db.session.add(profile)
         is_new = True
-        current_app.logger.info(f"[PROFILE_CREATE] Creating new profile for user_id={user.user_id}")
+        current_app.logger.info(
+            f"[PROFILE_CREATE] Creating new profile for user_id={user.user_id}"
+        )
     else:
-        current_app.logger.info(f"[PROFILE_CREATE] Updating existing profile for user_id={user.user_id}")
+        current_app.logger.info(
+            f"[PROFILE_CREATE] Updating existing profile for user_id={user.user_id}"
+        )
 
     data = request.get_json()
     if not data:
@@ -319,7 +323,7 @@ def upload_picture():
                 os.path.dirname(os.path.dirname(__file__)), upload_folder
             )
         profile_pics_folder = os.path.join(upload_folder, "profile_pics")
-    
+
     os.makedirs(profile_pics_folder, exist_ok=True)
     filepath = os.path.join(profile_pics_folder, filename)
     file.save(filepath)

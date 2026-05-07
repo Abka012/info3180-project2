@@ -1,6 +1,5 @@
 import sys
 import os
-import pytest
 from app import db
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -71,6 +70,7 @@ class TestGetPotentialMatches:
         """Should return 400 if user has no profile."""
         with app.app_context():
             from app.models import Profile
+
             Profile.query.filter_by(user_id=verified_user["user_id"]).delete()
             db.session.commit()
 
@@ -80,6 +80,7 @@ class TestGetPotentialMatches:
         )
 
         assert response.status_code == 400
+
 
 class TestGetMatches:
     """Test getting mutual matches."""
@@ -146,9 +147,7 @@ class TestMatchScore:
 
         assert response.status_code in [200, 400]
 
-    def test_match_score_includes_details(
-        self, client, user_with_profile, second_user
-    ):
+    def test_match_score_includes_details(self, client, user_with_profile, second_user):
         """Match score should include scoring details."""
         response = client.get(
             f'/api/matches/score/{second_user["user_id"]}',
@@ -163,9 +162,7 @@ class TestMatchScore:
 class TestMatchFilters:
     """Test match filtering functionality."""
 
-    def test_filter_by_age_min(
-        self, client, user_with_profile, second_user
-    ):
+    def test_filter_by_age_min(self, client, user_with_profile, second_user):
         """Should filter by minimum age."""
         response = client.get(
             "/api/matches/potential?age_min=30",
@@ -176,9 +173,7 @@ class TestMatchFilters:
         for match in response.json:
             assert match["age"] >= 30
 
-    def test_filter_by_age_max(
-        self, client, user_with_profile, second_user
-    ):
+    def test_filter_by_age_max(self, client, user_with_profile, second_user):
         """Should filter by maximum age."""
         response = client.get(
             "/api/matches/potential?age_max=20",
@@ -189,9 +184,7 @@ class TestMatchFilters:
         for match in response.json:
             assert match["age"] <= 20
 
-    def test_filter_by_interests(
-        self, client, user_with_profile, second_user
-    ):
+    def test_filter_by_interests(self, client, user_with_profile, second_user):
         """Should filter by shared interests."""
         response = client.get(
             "/api/matches/potential?interests=coding",

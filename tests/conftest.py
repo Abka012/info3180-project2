@@ -116,13 +116,13 @@ def second_user(client, app):
 
         user = db.session.query(User).filter_by(email="second@example.com").first()
         user.is_verified = True
-        
+
         # Ensure profile is populated correctly
         profile = Profile.query.filter_by(user_id=user.user_id).first()
         if not profile:
             profile = Profile(user_id=user.user_id)
             db.session.add(profile)
-            
+
         profile.name = "Second User"
         profile.age = 28
         profile.bio = "Profile for second test user"
@@ -130,11 +130,19 @@ def second_user(client, app):
         profile.gender_preference = "male"
         profile.preferred_age_min = 18
         profile.preferred_age_max = 50
-        profile.interests = ["cooking", "hiking", "yoga", "travel", "photography", "coding", "music"]
+        profile.interests = [
+            "cooking",
+            "hiking",
+            "yoga",
+            "travel",
+            "photography",
+            "coding",
+            "music",
+        ]
         profile.relationship_goal = "serious_relationship"
         profile.occupation = "Designer"
         profile.visibility = True
-        
+
         db.session.commit()
         db.session.refresh(profile)
         user_id = user.user_id
@@ -184,6 +192,7 @@ def verified_user(client, app):
         "email": "test@example.com",
     }
 
+
 @pytest.fixture
 def user_with_profile(client, app, verified_user):
     """Create a verified user with a complete profile."""
@@ -211,9 +220,12 @@ def user_with_profile(client, app, verified_user):
         db.session.add(profile)
         db.session.commit()
         db.session.refresh(profile)
-        print(f"DEBUG: Profile 1 saved - interests: {profile.interests}, goal: {profile.relationship_goal}")
+        print(
+            f"DEBUG: Profile 1 saved - interests: {profile.interests}, goal: {profile.relationship_goal}"
+        )
 
         return verified_user
+
 
 @pytest.fixture
 def second_user_with_profile(client, app, second_user):
@@ -233,7 +245,15 @@ def second_user_with_profile(client, app, second_user):
         profile.gender_preference = "male"
         profile.preferred_age_min = 18
         profile.preferred_age_max = 50
-        profile.interests = ["cooking", "hiking", "yoga", "travel", "photography", "coding", "music"]
+        profile.interests = [
+            "cooking",
+            "hiking",
+            "yoga",
+            "travel",
+            "photography",
+            "coding",
+            "music",
+        ]
         profile.relationship_goal = "serious_relationship"
         profile.occupation = "Designer"
         profile.visibility = True
@@ -241,54 +261,11 @@ def second_user_with_profile(client, app, second_user):
         db.session.add(profile)
         db.session.commit()
         db.session.refresh(profile)
-        print(f"DEBUG: Profile 2 saved - interests: {profile.interests}, goal: {profile.relationship_goal}")
+        print(
+            f"DEBUG: Profile 2 saved - interests: {profile.interests}, goal: {profile.relationship_goal}"
+        )
 
         return second_user
-
-    with app.app_context():
-        from app.models import User
-
-        user = db.session.query(User).filter_by(email="second@example.com").first()
-        user.is_verified = True
-        db.session.commit()
-        user_id = user.user_id
-
-    response = client.post(
-        "/api/auth/login",
-        json={"email": "second@example.com", "password": "TestPass123!"},
-    )
-
-    return {
-        "user_id": user_id,
-        "token": response.json["token"],
-        "email": "second@example.com",
-    }
-
-
-@pytest.fixture
-def second_user_with_profile(client, app, second_user):
-    """Create a second verified user with a complete profile."""
-    with app.app_context():
-        from app.models import Profile
-
-        profile = Profile.query.filter_by(user_id=second_user["user_id"]).first()
-        if not profile:
-            profile = Profile(user_id=second_user["user_id"])
-            db.session.add(profile)
-            
-        profile.name = "Second User"
-        profile.age = 28
-        profile.bio = "Profile for second test user"
-        profile.gender = "female"
-        profile.gender_preference = "male"
-        profile.interests = ["cooking", "hiking", "yoga", "travel", "photography"]
-        profile.relationship_goal = "serious_relationship"
-        profile.occupation = "Designer"
-        profile.visibility = True
-        
-        db.session.commit()
-
-    return second_user
 
 
 @pytest.fixture
@@ -398,7 +375,7 @@ def third_user_with_profile(client, app, third_user):
         if not profile:
             profile = Profile(user_id=third_user["user_id"])
             db.session.add(profile)
-            
+
         profile.name = "Third User"
         profile.age = 30
         profile.bio = "Profile for third test user"
@@ -408,7 +385,7 @@ def third_user_with_profile(client, app, third_user):
         profile.relationship_goal = "friendship"
         profile.occupation = "Artist"
         profile.visibility = True
-        
+
         db.session.commit()
 
     return third_user

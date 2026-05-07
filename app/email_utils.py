@@ -2,7 +2,7 @@ import smtplib
 import time
 import json
 from email.message import EmailMessage
-from urllib.error import HTTPError, URLError
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 from flask import current_app
@@ -35,9 +35,7 @@ def _send_resend_email(to_email, subject, body):
     )
 
     if not api_key:
-        current_app.logger.error(
-            "[EMAIL ERROR] RESEND_API_KEY is not configured"
-        )
+        current_app.logger.error("[EMAIL ERROR] RESEND_API_KEY is not configured")
         return False
 
     if not from_email:
@@ -46,7 +44,9 @@ def _send_resend_email(to_email, subject, body):
         )
         return False
 
-    current_app.logger.info(f"[EMAIL] Preparing to send via Resend: {to_email} (Subject: {subject})")
+    current_app.logger.info(
+        f"[EMAIL] Preparing to send via Resend: {to_email} (Subject: {subject})"
+    )
 
     payload = json.dumps(
         {
@@ -69,7 +69,9 @@ def _send_resend_email(to_email, subject, body):
     )
 
     try:
-        current_app.logger.debug(f"[EMAIL] Resend Payload: {payload.decode('utf-8')[:500]}...")
+        current_app.logger.debug(
+            f"[EMAIL] Resend Payload: {payload.decode('utf-8')[:500]}..."
+        )
         with urlopen(request, timeout=30) as response:
             response_body = response.read().decode("utf-8")
             current_app.logger.info(

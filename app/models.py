@@ -171,13 +171,15 @@ class Profile(db.Model):
     preferred_age_min = db.Column(db.Integer, default=18)
     preferred_age_max = db.Column(db.Integer, default=50)
     interests = db.Column(JSON, default=list)  # Use default=list for empty list
-    
+
     @property
     def interests_list(self):
         if isinstance(self.interests, str):
             import json
+
             return json.loads(self.interests)
         return self.interests or []
+
     profile_picture = db.Column(db.String(255), nullable=True)
     visibility = db.Column(db.Boolean, default=True)
     gender = db.Column(db.String(50), nullable=True)
