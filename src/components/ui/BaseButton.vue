@@ -59,7 +59,7 @@ const variantClasses = computed(
   () =>
     ({
       primary:
-        "bg-[var(--primary)] text-[var(--color-var(--bg))] hover:bg-[color-mix(in srgb,var(--primary),var(--text-primary) 15%)] focus:ring-[var(--primary)]",
+        "bg-[var(--primary)] text-[var(--bg)] hover:bg-[color-mix(in srgb,var(--primary),var(--text-primary) 15%)] focus:ring-[var(--primary)]",
       secondary:
         "bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[color-mix(in srgb,var(--surface),var(--text-primary) 5%)] focus:ring-[var(--border)]",
       outline:
@@ -67,7 +67,7 @@ const variantClasses = computed(
       ghost:
         "text-[var(--text-secondary)] hover:bg-[color-mix(in srgb,var(--surface),var(--text-primary) 5%)] focus:ring-[var(--border)]",
       danger:
-        "bg-[var(--danger)] text-[var(--color-var(--bg))] hover:bg-[color-mix(in srgb,var(--danger),var(--text-primary) 15%)] focus:ring-[var(--danger)]",
+        "bg-[var(--danger)] text-[var(--bg)] hover:bg-[color-mix(in srgb,var(--danger),var(--text-primary) 15%)] focus:ring-[var(--danger)]",
     })[props.variant],
 );
 
