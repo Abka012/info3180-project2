@@ -130,18 +130,12 @@ def _send_resend_email(to_email, subject, body):
 def _send_smtp_email(to_email, subject, body):
     mail_config = _get_mail_config()
 
-    current_app.logger.info(
-        "[EMAIL] Attempting SMTP fallback"
-    )
-    current_app.logger.info(
-        "[EMAIL] SMTP credentials configured"
-    )
+    current_app.logger.info("[EMAIL] Attempting SMTP fallback")
+    current_app.logger.info("[EMAIL] SMTP credentials configured")
 
     if not mail_config["user"] or not mail_config["password"]:
         if current_app.config.get("DEBUG"):
-            current_app.logger.info(
-                "[MOCK EMAIL] DEBUG mode - email not actually sent"
-            )
+            current_app.logger.info("[MOCK EMAIL] DEBUG mode - email not actually sent")
             current_app.logger.info(f"[MOCK EMAIL] To: {to_email}")
             current_app.logger.info(f"[MOCK EMAIL] Subject: {subject}")
             current_app.logger.info(f"[MOCK EMAIL] Body preview: {body[:200]}...")
@@ -151,9 +145,7 @@ def _send_smtp_email(to_email, subject, body):
         return False
 
     try:
-        current_app.logger.info(
-        "[EMAIL] Connecting to SMTP server"
-    )
+        current_app.logger.info("[EMAIL] Connecting to SMTP server")
 
         msg = EmailMessage()
         msg["From"] = mail_config["from_email"]
@@ -170,15 +162,15 @@ def _send_smtp_email(to_email, subject, body):
         current_app.logger.info(f"[EMAIL] Using SMTP class: {smtp_class.__name__}")
 
         with smtp_class(mail_config["host"], mail_config["port"], timeout=30) as server:
-            current_app.logger.info(f"[EMAIL] SMTP connection established")
+            current_app.logger.info("[EMAIL] SMTP connection established")
             if mail_config["use_tls"] and not mail_config["use_ssl"]:
-                current_app.logger.info(f"[EMAIL] Starting TLS encryption")
+                current_app.logger.info("[EMAIL] Starting TLS encryption")
                 server.starttls()
-            current_app.logger.info(f"[EMAIL] Attempting SMTP authentication")
+            current_app.logger.info("[EMAIL] Attempting SMTP authentication")
             server.login(mail_config["user"], mail_config["password"])
-            current_app.logger.info(f"[EMAIL] SMTP authenticated successfully")
+            current_app.logger.info("[EMAIL] SMTP authenticated successfully")
             server.send_message(msg)
-            current_app.logger.info(f"[EMAIL] Message sent successfully")
+            current_app.logger.info("[EMAIL] Message sent successfully")
 
         current_app.logger.info(f"[EMAIL] SUCCESS - Email sent to {to_email} via SMTP")
         return True
@@ -224,5 +216,5 @@ def send_email(to_email, subject, body):
     current_app.logger.info(
         f"[EMAIL] SMTP send result: {'SUCCESS' if result else 'FAILED'}"
     )
-    current_app.logger.info(f"[EMAIL] ===== EMAIL REQUEST COMPLETED =====")
+    current_app.logger.info("[EMAIL] ===== EMAIL REQUEST COMPLETED =====")
     return result

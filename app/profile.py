@@ -127,7 +127,7 @@ def create_profile():
         visibility=data.get("visibility", True),
     )
 
-    current_app.logger.info(f"[PROFILE_CREATE] Adding to session and committing...")
+    current_app.logger.info("[PROFILE_CREATE] Adding to session and committing...")
     db.session.add(profile)
 
     try:
@@ -151,12 +151,12 @@ def get_my_profile():
     """Get current user's profile."""
     from flask import current_app
 
-    current_app.logger.info(f"[PROFILE_GET] Request received")
+    current_app.logger.info("[PROFILE_GET] Request received")
 
     user = get_user_from_token()
     if not user:
         current_app.logger.warning(
-            f"[PROFILE_GET] Authentication failed - no valid token"
+            "[PROFILE_GET] Authentication failed - no valid token"
         )
         return jsonify({"error": "Authentication required"}), 401
 
@@ -209,12 +209,12 @@ def update_profile():
     """Update current user's profile."""
     from flask import current_app
 
-    current_app.logger.info(f"[PROFILE_UPDATE] Request received")
+    current_app.logger.info("[PROFILE_UPDATE] Request received")
 
     user = get_user_from_token()
     if not user:
         current_app.logger.warning(
-            f"[PROFILE_UPDATE] Authentication failed - no valid token"
+            "[PROFILE_UPDATE] Authentication failed - no valid token"
         )
         return jsonify({"error": "Authentication required"}), 401
 
@@ -235,7 +235,7 @@ def update_profile():
 
     data = request.get_json()
     if not data:
-        current_app.logger.warning(f"[PROFILE_UPDATE] No data provided in request")
+        current_app.logger.warning("[PROFILE_UPDATE] No data provided in request")
         return jsonify({"errors": {"data": "No data provided"}}), 400
 
     current_app.logger.info(f"[PROFILE_UPDATE] Data received: {list(data.keys())}")
@@ -266,7 +266,7 @@ def update_profile():
     profile.visibility = data.get("visibility", profile.visibility)
 
     current_app.logger.info(
-        f"[PROFILE_UPDATE] Profile fields updated, now committing..."
+        "[PROFILE_UPDATE] Profile fields updated, now committing..."
     )
 
     try:
