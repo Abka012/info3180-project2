@@ -72,20 +72,29 @@ def validate_and_get_errors(data):
 @bp.route("", methods=["POST"])
 def create_profile():
     """Create a new profile for the authenticated user."""
+    from flask import current_app
+    current_app.logger.info(f"[PROFILE_CREATE] Request received")
+
     user = get_user_from_token()
     if not user:
+        current_app.logger.warning(f"[PROFILE_CREATE] Authentication failed - no valid token")
         return jsonify({"error": "Authentication required"}), 401
+
+    current_app.logger.info(f"[PROFILE_CREATE] User authenticated: user_id={user.user_id}, email={user.email}")
 
     existing = Profile.query.filter_by(user_id=user.user_id).first()
     if existing:
+        current_app.logger.warning(f"[PROFILE_CREATE] Profile already exists for user_id={user.user_id}")
         return jsonify({"error": "Profile already exists"}), 400
 
     data = request.get_json()
     if not data:
+        current_app.logger.warning(f"[PROFILE_CREATE] No data provided in request")
         return jsonify({"errors": {"data": "No data provided"}}), 400
 
     errors = validate_and_get_errors(data)
     if errors:
+        current_app.logger.warning(f"[PROFILE_CREATE] Validation errors: {errors}")
         return jsonify({"errors": errors}), 400
 
     interests = data.get("interests", "")
@@ -93,6 +102,8 @@ def create_profile():
         interests = [i.strip() for i in interests.split(",") if i.strip()]
     elif isinstance(interests, list):
         interests = interests
+
+    current_app.logger.info(f"[PROFILE_CREATE] Creating profile with name={data['name']}, age={data['age']}")
 
     profile = Profile(
         user_id=user.user_id,
@@ -106,8 +117,18 @@ def create_profile():
         occupation=data.get("occupation", ""),
         visibility=data.get("visibility", True),
     )
+
+    current_app.logger.info(f"[PROFILE_CREATE] Adding to session and committing...")
     db.session.add(profile)
-    db.session.commit()
+
+    try:
+        db.session.commit()
+        current_app.logger.info(f"[PROFILE_CREATE] SUCCESS - Profile created: profile_id={profile.profile_id}, user_id={user.user_id}")
+    except Exception as e:
+        current_app.logger.error(f"[PROFILE_CREATE] FAILED to commit: {type(e).__name__}: {e}")
+        current_app.logger.exception("[PROFILE_CREATE] Full exception traceback:")
+        db.session.rollback()
+        return jsonify({"error": f"Failed to create profile: {str(e)}"}), 500
 
     return jsonify(profile.to_dict()), 201
 
@@ -115,50 +136,78 @@ def create_profile():
 @bp.route("", methods=["GET"])
 def get_my_profile():
     """Get current user's profile."""
+    from flask import current_app
+    current_app.logger.info(f"[PROFILE_GET] Request received")
+
     user = get_user_from_token()
     if not user:
+        current_app.logger.warning(f"[PROFILE_GET] Authentication failed - no valid token")
         return jsonify({"error": "Authentication required"}), 401
+
+    current_app.logger.info(f"[PROFILE_GET] User authenticated: user_id={user.user_id}")
 
     profile = Profile.query.filter_by(user_id=user.user_id).first()
     if not profile:
+        current_app.logger.warning(f"[PROFILE_GET] Profile not found for user_id={user.user_id}")
         return jsonify({"error": "Profile not found"}), 404
 
+    current_app.logger.info(f"[PROFILE_GET] Profile found: profile_id={profile.profile_id}, name={profile.name}")
     return jsonify(profile.to_dict()), 200
 
 
 @bp.route("/<int:user_id>", methods=["GET"])
 def get_other_profile(user_id):
     """Get another user's profile."""
+    from flask import current_app
+    current_app.logger.info(f"[PROFILE_GET_OTHER] Request for user_id={user_id}")
+
     user = get_user_from_token()
 
     profile = Profile.query.filter_by(user_id=user_id).first()
     if not profile:
+        current_app.logger.warning(f"[PROFILE_GET_OTHER] Profile not found for user_id={user_id}")
         return jsonify({"error": "Profile not found"}), 404
 
     if not profile.visibility:
         if not user or user.user_id != user_id:
+            current_app.logger.warning(f"[PROFILE_GET_OTHER] Profile is private, access denied for user_id={user.user_id if user else 'anonymous'}")
             return jsonify({"error": "Profile is private"}), 403
 
+    current_app.logger.info(f"[PROFILE_GET_OTHER] Profile accessed: profile_id={profile.profile_id}")
     return jsonify(profile.to_dict()), 200
 
 
 @bp.route("", methods=["PUT"])
 def update_profile():
     """Update current user's profile."""
+    from flask import current_app
+
+    current_app.logger.info(f"[PROFILE_UPDATE] Request received")
+
     user = get_user_from_token()
     if not user:
+        current_app.logger.warning(f"[PROFILE_UPDATE] Authentication failed - no valid token")
         return jsonify({"error": "Authentication required"}), 401
+
+    current_app.logger.info(f"[PROFILE_UPDATE] User authenticated: user_id={user.user_id}, email={user.email}")
 
     profile = Profile.query.filter_by(user_id=user.user_id).first()
     if not profile:
+        current_app.logger.warning(f"[PROFILE_UPDATE] Profile not found for user_id={user.user_id}")
         return jsonify({"error": "Profile not found"}), 404
+
+    current_app.logger.info(f"[PROFILE_UPDATE] Existing profile found: profile_id={profile.profile_id}, name={profile.name}")
 
     data = request.get_json()
     if not data:
+        current_app.logger.warning(f"[PROFILE_UPDATE] No data provided in request")
         return jsonify({"errors": {"data": "No data provided"}}), 400
+
+    current_app.logger.info(f"[PROFILE_UPDATE] Data received: {list(data.keys())}")
 
     errors = validate_and_get_errors(data)
     if errors:
+        current_app.logger.warning(f"[PROFILE_UPDATE] Validation errors: {errors}")
         return jsonify({"errors": errors}), 400
 
     interests = data.get("interests")
@@ -166,6 +215,7 @@ def update_profile():
         if isinstance(interests, str):
             interests = [i.strip() for i in interests.split(",") if i.strip()]
         profile.interests = interests
+        current_app.logger.info(f"[PROFILE_UPDATE] Updated interests: {interests}")
 
     profile.name = data.get("name", profile.name)
     profile.age = data.get("age", profile.age)
@@ -180,7 +230,16 @@ def update_profile():
     profile.occupation = data.get("occupation", profile.occupation or "")
     profile.visibility = data.get("visibility", profile.visibility)
 
-    db.session.commit()
+    current_app.logger.info(f"[PROFILE_UPDATE] Profile fields updated, now committing...")
+
+    try:
+        db.session.commit()
+        current_app.logger.info(f"[PROFILE_UPDATE] SUCCESS - Profile updated: profile_id={profile.profile_id}")
+    except Exception as e:
+        current_app.logger.error(f"[PROFILE_UPDATE] FAILED to commit: {type(e).__name__}: {e}")
+        current_app.logger.exception("[PROFILE_UPDATE] Full exception traceback:")
+        db.session.rollback()
+        return jsonify({"error": f"Failed to update profile: {str(e)}"}), 500
 
     return jsonify(profile.to_dict()), 200
 

@@ -1,57 +1,66 @@
 import os
 import random
 import sys
+from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app import bcrypt, create_app, db
+from app import create_app, db
 from app.models import Bookmark, Like, Match, Message, Notification, Profile, User
+from app import bcrypt
 
 random.seed(42)
 
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 def seed(screenshot_mode=False):
+    logger.info("=" * 60)
+    logger.info("DATABASE SEEDING STARTED")
+    logger.info("=" * 60)
+
     instance_dir = os.path.join(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "instance"
     )
     if not os.path.exists(instance_dir):
         os.makedirs(instance_dir)
-        print(f"Created instance folder: {instance_dir}")
+        logger.info(f"Created instance folder: {instance_dir}")
 
     app = create_app()
 
     with app.app_context():
+        logger.info("[SEED] Dropping all tables...")
         db.drop_all()
+        logger.info("[SEED] Creating all tables...")
         db.create_all()
-        print("Seeding database...")
+        logger.info("[SEED] Database tables created successfully")
 
         users = []
 
-        # 1. CREATE 5 REALISTIC USERS
+        logger.info("[SEED] Creating 5 seeded users...")
         for i in range(1, 6):
+            email = f"user{i}@test.com"
+            username = f"user{i}"
+
+            logger.info(f"[SEED] Creating user {i}: email={email}, username={username}")
+
             user = User(
-                email=f"user{i}@test.com",
-                username=f"user{i}",
-                password_hash=bcrypt.generate_password_hash("password123").decode(
-                    "utf-8"
-                ),
-                is_verified=True,  # All verified for testing
+                email=email,
+                username=username,
+                is_verified=True,
             )
+            user.set_password("password123")
             db.session.add(user)
             users.append(user)
 
-        # user1 = User(
-        #         email="",
-        #         password_hash=bcrypt.generate_password_hash("password123").decode(
-        #             "utf-8"
-        #         ),
-        #         is_verified=True,
-        #     )
-        # db.session.add(user1)
-        # users.append(user1)
-        db.session.commit()
+            logger.info(f"[SEED] User {i} added to session, now committing...")
+            db.session.commit()
+            logger.info(f"[SEED] SUCCESS - User {i} committed to database with user_id={user.user_id}")
 
-        # 2. CREATE DETAILED PROFILES (5 users)
+        logger.info("[SEED] All 5 users created and committed")
+
         profiles_data = [
             {
                 "name": "Alex Chen",
@@ -95,9 +104,12 @@ def seed(screenshot_mode=False):
             },
         ]
 
+        logger.info("[SEED] Creating profiles for all users...")
         for i, user in enumerate(users):
             if i < len(profiles_data):
                 data = profiles_data[i]
+                logger.info(f"[SEED] Creating profile for user_id={user.user_id}, name={data['name']}")
+
                 profile = Profile(
                     user_id=user.user_id,
                     name=data["name"],
@@ -112,6 +124,7 @@ def seed(screenshot_mode=False):
                     occupation=data.get("occupation", ""),
                 )
             else:
+                logger.info(f"[SEED] Creating random profile for user_id={user.user_id}")
                 profile = Profile(
                     user_id=user.user_id,
                     name=f"User{i + 1}",
@@ -127,20 +140,12 @@ def seed(screenshot_mode=False):
                 )
             db.session.add(profile)
 
+        logger.info("[SEED] Committing all profiles...")
         db.session.commit()
+        logger.info("[SEED] All profiles committed successfully")
 
-        # ===== GUARANTEED DATA FOR ALL 5 USERS =====
-        # Each user gets 2 matches with realistic messages, bookmarks, and notifications
-
-        # Define match pairs: each user has 2 matches
-        # User1 ↔ User2, User1 ↔ User3
-        # User2 ↔ User1, User2 ↔ User4
-        # User3 ↔ User1, User3 ↔ User5
-        # User4 ↔ User2, User4 ↔ User5
-        # User5 ↔ User3, User5 ↔ User4
         match_pairs = [(1, 2), (1, 3), (2, 4), (3, 5), (4, 5)]
 
-        # Message templates for conversations
         conversation_templates = {
             (1, 2): [
                 (
@@ -202,12 +207,13 @@ def seed(screenshot_mode=False):
             ],
         }
 
-        # Create matches, likes, messages, bookmarks, notifications for each pair
+        logger.info("[SEED] Creating matches, likes, messages, bookmarks, and notifications...")
+
         for u1, u2 in match_pairs:
             user1 = users[u1 - 1]
             user2 = users[u2 - 1]
+            logger.info(f"[SEED] Creating mutual data for user pair: {u1} <-> {u2}")
 
-            # Create mutual likes
             like1 = Like(
                 from_user_id=user1.user_id, to_user_id=user2.user_id, status="liked"
             )
@@ -216,11 +222,9 @@ def seed(screenshot_mode=False):
             )
             db.session.add_all([like1, like2])
 
-            # Create match
             match = Match(user1_id=user1.user_id, user2_id=user2.user_id)
             db.session.add(match)
 
-            # Create messages (use template or generate generic ones)
             key = (u1, u2) if u1 < u2 else (u2, u1)
             messages = conversation_templates.get(
                 key,
@@ -242,7 +246,6 @@ def seed(screenshot_mode=False):
                 )
                 db.session.add(message)
 
-            # Create bookmarks (each user bookmarks the other)
             bookmark1 = Bookmark(
                 user_id=user1.user_id, bookmarked_user_id=user2.user_id
             )
@@ -251,41 +254,62 @@ def seed(screenshot_mode=False):
             )
             db.session.add_all([bookmark1, bookmark2])
 
-            # Create notifications for each user
-            name1 = Profile.query.filter_by(user_id=user1.user_id).first().name
-            name2 = Profile.query.filter_by(user_id=user2.user_id).first().name
+            profile1 = Profile.query.filter_by(user_id=user1.user_id).first()
+            profile2 = Profile.query.filter_by(user_id=user2.user_id).first()
 
             notif1 = Notification(
                 user_id=user1.user_id,
                 type="match",
-                message=f"You matched with {name2}!",
+                message=f"You matched with {profile2.name}!",
                 from_user_id=user2.user_id,
             )
             notif2 = Notification(
                 user_id=user2.user_id,
                 type="match",
-                message=f"You matched with {name1}!",
+                message=f"You matched with {profile1.name}!",
                 from_user_id=user1.user_id,
             )
             db.session.add_all([notif1, notif2])
 
+        logger.info("[SEED] Committing all relationship data...")
         db.session.commit()
+        logger.info("[SEED] All relationship data committed successfully")
 
-        # Print summary
-        print("\n" + "=" * 50)
-        print("DATABASE SEEDING COMPLETE - SUMMARY")
-        print("=" * 50)
-        print(f"\n📊 Users: {User.query.count()}")
-        print(f"👤 Profiles: {Profile.query.count()}")
-        print(f"❤️  Likes: {Like.query.count()}")
-        print(f"🔥 Matches: {Match.query.count()}")
-        print(f"💬 Messages: {Message.query.count()}")
-        print(f"🔔 Notifications: {Notification.query.count()}")
-        print(f"📌 Bookmarks: {Bookmark.query.count()}")
-        print("\n" + "=" * 50)
-        print("✅ Database seeded successfully!")
-        print("=" * 50)
+        user_count = User.query.count()
+        profile_count = Profile.query.count()
+        like_count = Like.query.count()
+        match_count = Match.query.count()
+        message_count = Message.query.count()
+        notification_count = Notification.query.count()
+        bookmark_count = Bookmark.query.count()
+
+        logger.info("\n" + "=" * 50)
+        logger.info("DATABASE SEEDING COMPLETE - SUMMARY")
+        logger.info("=" * 50)
+        logger.info(f"Users: {user_count}")
+        logger.info(f"Profiles: {profile_count}")
+        logger.info(f"Likes: {like_count}")
+        logger.info(f"Matches: {match_count}")
+        logger.info(f"Messages: {message_count}")
+        logger.info(f"Notifications: {notification_count}")
+        logger.info(f"Bookmarks: {bookmark_count}")
+        logger.info("\n" + "=" * 50)
+        logger.info("Seeded users login credentials:")
+        logger.info("  Email: user1@test.com - user5@test.com")
+        logger.info("  Password: password123")
+        logger.info("=" * 50)
+
+        return {
+            "users": user_count,
+            "profiles": profile_count,
+            "likes": like_count,
+            "matches": match_count,
+            "messages": message_count,
+            "notifications": notification_count,
+            "bookmarks": bookmark_count,
+        }
 
 
 if __name__ == "__main__":
-    seed()
+    result = seed()
+    print(f"\nSeeding complete: {result}")

@@ -40,6 +40,32 @@ def register():
     db.session.add(user)
     db.session.commit()
 
+    from flask import current_app
+
+    verification_url = f"{current_app.config.get('FRONTEND_URL', 'http://localhost:5173')}/verify/{user.verification_token}"
+    subject = "Verify your email - Dating App"
+    body = f"""
+    <html>
+        <body style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2>Verify your email</h2>
+            <p>Thanks for signing up! Please click the link below to verify your email:</p>
+            <p><a href="{verification_url}" style="background: #e74c3c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Verify Email</a></p>
+            <p>Or copy and paste this link into your browser:</p>
+            <p style="color: #666;">{verification_url}</p>
+            <p style="color: #999; font-size: 12px;">This link expires in 7 days.</p>
+        </body>
+    </html>
+    """
+
+    current_app.logger.info(f"[REGISTER] User registered: {user.email}, user_id={user.user_id}")
+    current_app.logger.info(f"[REGISTER] Verification token generated: {user.verification_token[:20]}...")
+
+    email_sent = send_email(user.email, subject, body)
+    if email_sent:
+        current_app.logger.info(f"[REGISTER] Verification email sent successfully to {user.email}")
+    else:
+        current_app.logger.error(f"[REGISTER] FAILED to send verification email to {user.email}")
+
     return jsonify({"message": "User registered", "user_id": user.user_id}), 201
 
 
@@ -137,30 +163,42 @@ def get_current_user():
 @bp.route("/verify/<token>", methods=["GET"])
 def verify_email(token):
     """Verify user email with token."""
+    from flask import current_app
+    current_app.logger.info(f"[VERIFY_EMAIL] Verification request received with token: {token[:20]}...")
+
     user = User.query.filter_by(verification_token=token).first()
     if not user:
+        current_app.logger.warning(f"[VERIFY_EMAIL] Invalid token provided: {token[:20]}...")
         return jsonify({"error": "Invalid verification token"}), 404
 
     if user.is_verified:
+        current_app.logger.info(f"[VERIFY_EMAIL] Email already verified for user_id={user.user_id}, email={user.email}")
         return jsonify({"message": "Email already verified"}), 200
 
+    current_app.logger.info(f"[VERIFY_EMAIL] Verifying email for user_id={user.user_id}, email={user.email}")
     user.is_verified = True
     db.session.commit()
+    current_app.logger.info(f"[VERIFY_EMAIL] SUCCESS - Email verified for {user.email}")
+
     return jsonify({"message": "Email verified successfully"}), 200
 
 
 @bp.route("/resend-verification", methods=["POST"])
 def resend_verification():
     """Resend verification email."""
+    from flask import current_app
     data = request.get_json()
     email = data.get("email")
 
+    current_app.logger.info(f"[RESEND_VERIFY] Request received for email: {email}")
+
     if not email or not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        current_app.logger.warning(f"[RESEND_VERIFY] Invalid email format: {email}")
         return jsonify({"error": "Invalid email format"}), 400
 
-    # Don't reveal if email exists
     user = User.query.filter_by(email=email).first()
-    if not user or user.is_verified:
+    if not user:
+        current_app.logger.info(f"[RESEND_VERIFY] Email not found in database, returning generic response")
         return (
             jsonify(
                 {"message": "If the email exists, a verification link has been sent"}
@@ -168,12 +206,19 @@ def resend_verification():
             200,
         )
 
-    # Generate new token
+    if user.is_verified:
+        current_app.logger.info(f"[RESEND_VERIFY] User already verified: {email}")
+        return (
+            jsonify(
+                {"message": "If the email exists, a verification link has been sent"}
+            ),
+            200,
+        )
+
+    current_app.logger.info(f"[RESEND_VERIFY] Generating new verification token for user_id={user.user_id}")
     user.verification_token = secrets.token_urlsafe(32)
     db.session.commit()
-
-    # Send verification email
-    from flask import current_app
+    current_app.logger.info(f"[RESEND_VERIFY] New token saved to database")
 
     verification_url = f"{current_app.config.get('FRONTEND_URL', 'http://localhost:5173')}/verify/{user.verification_token}"
     subject = "Verify your email - Dating App"
@@ -189,7 +234,13 @@ def resend_verification():
         </body>
     </html>
     """
-    send_email(user.email, subject, body)
+
+    current_app.logger.info(f"[RESEND_VERIFY] Calling send_email for {email}")
+    email_result = send_email(user.email, subject, body)
+    if email_result:
+        current_app.logger.info(f"[RESEND_VERIFY] Verification email sent successfully to {email}")
+    else:
+        current_app.logger.error(f"[RESEND_VERIFY] FAILED to send verification email to {email}")
 
     return jsonify({"message": "Verification email sent"}), 200
 
