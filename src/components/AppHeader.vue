@@ -30,7 +30,6 @@
         </router-link>
 
         <!-- Desktop Navigation -->
-        <ThemeToggle />
         <div class="hidden md:flex items-center space-x-1">
           <template v-if="isAuthenticated">
             <router-link

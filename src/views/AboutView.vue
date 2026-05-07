@@ -1,5 +1,4 @@
 <template>
-  <ThemeToggle />
   <div class="about-container">
     <section class="hero">
       <div class="hero-content">
