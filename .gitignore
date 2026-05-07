@@ -64,6 +64,9 @@ uploads/*.jpg
 uploads/*.jpeg
 uploads/*.gif
 !uploads/.gitkeep
+uploads/profile_pics/*.png
+uploads/profile_pics/*.jpg
+uploads/profile_pics/*.webp
 
 # Debug Screenshots
 docs/debug/

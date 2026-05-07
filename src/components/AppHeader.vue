@@ -124,7 +124,8 @@
               >
                 <img
                   v-if="userProfilePicture"
-                  :src="`http://localhost:5000/uploads/${userProfilePicture}`"
+                  :src="`${API_BASE_URL}/uploads/${userProfilePicture}`"
+
                   class="w-full h-full object-cover"
                   @error="($event) => ($event.target.style.display = 'none')"
                 />
@@ -174,7 +175,8 @@
                   >
                     <img
                       v-if="userProfilePicture"
-                      :src="`http://localhost:5000/uploads/${userProfilePicture}`"
+                      :src="`${API_BASE_URL}/uploads/${userProfilePicture}`"
+
                       class="w-full h-full object-cover"
                       @error="
                         ($event) => ($event.target.style.display = 'none')
@@ -741,6 +743,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
+import { API_BASE_URL } from "../services/api";
 import authService from "../services/authService";
 import notificationService from "../services/notificationService";
 import messageService from "../services/messageService";

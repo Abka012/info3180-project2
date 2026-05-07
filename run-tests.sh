@@ -26,6 +26,10 @@ show_help() {
 
 run_all() {
     source .venv/bin/activate 2>/dev/null || true
+    echo "Cleaning up generated test images..."
+    rm -rf uploads/profile_pics/*.png
+    rm -rf uploads/profile_pics/*.jpg
+    rm -rf uploads/profile_pics/*.webp
     echo "Running all tests..."
     pytest tests/ -v --tb=short
 }

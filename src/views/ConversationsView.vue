@@ -30,7 +30,7 @@
         <div class="conversation-avatar">
           <img
             v-if="conv.profile_picture"
-            :src="`http://localhost:5000/uploads/${conv.profile_picture}`"
+            :src="`${API_BASE_URL}/uploads/${conv.profile_picture}`"
             alt="Profile"
           />
           <div v-else class="avatar-placeholder">
@@ -62,6 +62,7 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import messageService from "../services/messageService";
 import socketService from "../services/socketService";
+import { API_BASE_URL } from "../services/api";
 
 const router = useRouter();
 const conversations = ref([]);

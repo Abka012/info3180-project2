@@ -18,6 +18,9 @@ def register():
     ):
         return jsonify({"errors": {"email": "Missing fields"}}), 400
 
+    name = data.get("name", data["email"].split("@")[0])
+    age = data.get("age", 18)
+
     if data["password"] != data["confirm_password"]:
         return jsonify({"errors": {"password": "Passwords do not match"}}), 400
 
@@ -35,9 +38,20 @@ def register():
     if not re.match(r"[^@]+@[^@]+\.[^@]+", data["email"]):
         return jsonify({"errors": {"email": "Invalid email format"}}), 400
 
+    # Create user
     user = User(email=data["email"], username=data["email"].split("@")[0])
     user.set_password(data["password"])
     db.session.add(user)
+    db.session.flush()  # Get user.id without committing
+
+    # Create profile
+    profile = Profile(
+        user_id=user.id,
+        name=name,
+        age=age,
+        profile_picture="default_avatar.png",
+    )
+    db.session.add(profile)
     db.session.commit()
 
     from flask import current_app
@@ -48,7 +62,8 @@ def register():
     <html>
         <body style="font-family: Arial, sans-serif; padding: 20px;">
             <h2>Verify your email</h2>
-            <p>Thanks for signing up! Please click the link below to verify your email:</p>
+            <p>Thanks for signing up, {name}!</p>
+            <p>Please click the link below to verify your email:</p>
             <p><a href="{verification_url}" style="background: #e74c3c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Verify Email</a></p>
             <p>Or copy and paste this link into your browser:</p>
             <p style="color: #666;">{verification_url}</p>
@@ -58,23 +73,36 @@ def register():
     """
 
     current_app.logger.info(
-        f"[REGISTER] User registered: {user.email}, user_id={user.user_id}"
+        f"[REGISTER] User and Profile created: {user.email}, user_id={user.id}, profile_id={profile.profile_id}"
     )
     current_app.logger.info(
-        f"[REGISTER] Verification token generated: {user.verification_token[:20]}..."
+        f"[REGISTER] Attempting to send verification email to {user.email}"
     )
 
-    email_sent = send_email(user.email, subject, body)
-    if email_sent:
-        current_app.logger.info(
-            f"[REGISTER] Verification email sent successfully to {user.email}"
-        )
-    else:
+    try:
+        email_sent = send_email(user.email, subject, body)
+        if email_sent:
+            current_app.logger.info(
+                f"[REGISTER] Verification email sent successfully to {user.email}"
+            )
+        else:
+            current_app.logger.error(
+                f"[REGISTER] FAILED to send verification email to {user.email} - provider returned False"
+            )
+    except Exception as e:
         current_app.logger.error(
-            f"[REGISTER] FAILED to send verification email to {user.email}"
+            f"[REGISTER] EXCEPTION sending verification email to {user.email}: {str(e)}"
         )
 
-    return jsonify({"message": "User registered", "user_id": user.user_id}), 201
+    return (
+        jsonify(
+            {
+                "message": "User registered successfully. Please check your email for verification.",
+                "user_id": user.user_id,
+            }
+        ),
+        201,
+    )
 
 
 @bp.route(
@@ -258,14 +286,19 @@ def resend_verification():
     """
 
     current_app.logger.info(f"[RESEND_VERIFY] Calling send_email for {email}")
-    email_result = send_email(user.email, subject, body)
-    if email_result:
-        current_app.logger.info(
-            f"[RESEND_VERIFY] Verification email sent successfully to {email}"
-        )
-    else:
+    try:
+        email_result = send_email(user.email, subject, body)
+        if email_result:
+            current_app.logger.info(
+                f"[RESEND_VERIFY] Verification email sent successfully to {email}"
+            )
+        else:
+            current_app.logger.error(
+                f"[RESEND_VERIFY] FAILED to send verification email to {email} - provider returned False"
+            )
+    except Exception as e:
         current_app.logger.error(
-            f"[RESEND_VERIFY] FAILED to send verification email to {email}"
+            f"[RESEND_VERIFY] EXCEPTION sending verification email to {email}: {str(e)}"
         )
 
     return jsonify({"message": "Verification email sent"}), 200

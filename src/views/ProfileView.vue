@@ -25,8 +25,9 @@
             v-if="profile.profile_picture || previewUrl"
             :src="
               previewUrl ||
-              `http://localhost:5000/uploads/${profile.profile_picture}?t=${avatarTimestamp}`
+              `${API_BASE_URL}/uploads/${profile.profile_picture}?t=${avatarTimestamp}`
             "
+
             alt="Profile Picture"
           />
           <div v-else class="avatar-placeholder">
@@ -208,6 +209,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import profileService from "../services/profileService";
 import authService from "../services/authService";
+import { API_BASE_URL } from "../services/api";
 
 const route = useRoute();
 const loading = ref(true);
