@@ -1,19 +1,17 @@
+import logging
 import os
 import random
 import sys
-from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app, db
 from app.models import Bookmark, Like, Match, Message, Notification, Profile, User
-from app import bcrypt
 
-random.seed(42)
-
-import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+random.seed(42)
 
 
 def seed(screenshot_mode=False):
@@ -57,7 +55,9 @@ def seed(screenshot_mode=False):
 
             logger.info(f"[SEED] User {i} added to session, now committing...")
             db.session.commit()
-            logger.info(f"[SEED] SUCCESS - User {i} committed to database with user_id={user.user_id}")
+            logger.info(
+                f"[SEED] SUCCESS - User {i} committed to database with user_id={user.user_id}"
+            )
 
         logger.info("[SEED] All 5 users created and committed")
 
@@ -108,7 +108,9 @@ def seed(screenshot_mode=False):
         for i, user in enumerate(users):
             if i < len(profiles_data):
                 data = profiles_data[i]
-                logger.info(f"[SEED] Creating profile for user_id={user.user_id}, name={data['name']}")
+                logger.info(
+                    f"[SEED] Creating profile for user_id={user.user_id}, name={data['name']}"
+                )
 
                 profile = Profile(
                     user_id=user.user_id,
@@ -124,7 +126,9 @@ def seed(screenshot_mode=False):
                     occupation=data.get("occupation", ""),
                 )
             else:
-                logger.info(f"[SEED] Creating random profile for user_id={user.user_id}")
+                logger.info(
+                    f"[SEED] Creating random profile for user_id={user.user_id}"
+                )
                 profile = Profile(
                     user_id=user.user_id,
                     name=f"User{i + 1}",
@@ -207,7 +211,9 @@ def seed(screenshot_mode=False):
             ],
         }
 
-        logger.info("[SEED] Creating matches, likes, messages, bookmarks, and notifications...")
+        logger.info(
+            "[SEED] Creating matches, likes, messages, bookmarks, and notifications..."
+        )
 
         for u1, u2 in match_pairs:
             user1 = users[u1 - 1]

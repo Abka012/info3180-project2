@@ -57,14 +57,22 @@ def register():
     </html>
     """
 
-    current_app.logger.info(f"[REGISTER] User registered: {user.email}, user_id={user.user_id}")
-    current_app.logger.info(f"[REGISTER] Verification token generated: {user.verification_token[:20]}...")
+    current_app.logger.info(
+        f"[REGISTER] User registered: {user.email}, user_id={user.user_id}"
+    )
+    current_app.logger.info(
+        f"[REGISTER] Verification token generated: {user.verification_token[:20]}..."
+    )
 
     email_sent = send_email(user.email, subject, body)
     if email_sent:
-        current_app.logger.info(f"[REGISTER] Verification email sent successfully to {user.email}")
+        current_app.logger.info(
+            f"[REGISTER] Verification email sent successfully to {user.email}"
+        )
     else:
-        current_app.logger.error(f"[REGISTER] FAILED to send verification email to {user.email}")
+        current_app.logger.error(
+            f"[REGISTER] FAILED to send verification email to {user.email}"
+        )
 
     return jsonify({"message": "User registered", "user_id": user.user_id}), 201
 
@@ -164,18 +172,27 @@ def get_current_user():
 def verify_email(token):
     """Verify user email with token."""
     from flask import current_app
-    current_app.logger.info(f"[VERIFY_EMAIL] Verification request received with token: {token[:20]}...")
+
+    current_app.logger.info(
+        f"[VERIFY_EMAIL] Verification request received with token: {token[:20]}..."
+    )
 
     user = User.query.filter_by(verification_token=token).first()
     if not user:
-        current_app.logger.warning(f"[VERIFY_EMAIL] Invalid token provided: {token[:20]}...")
+        current_app.logger.warning(
+            f"[VERIFY_EMAIL] Invalid token provided: {token[:20]}..."
+        )
         return jsonify({"error": "Invalid verification token"}), 404
 
     if user.is_verified:
-        current_app.logger.info(f"[VERIFY_EMAIL] Email already verified for user_id={user.user_id}, email={user.email}")
+        current_app.logger.info(
+            f"[VERIFY_EMAIL] Email already verified for user_id={user.user_id}, email={user.email}"
+        )
         return jsonify({"message": "Email already verified"}), 200
 
-    current_app.logger.info(f"[VERIFY_EMAIL] Verifying email for user_id={user.user_id}, email={user.email}")
+    current_app.logger.info(
+        f"[VERIFY_EMAIL] Verifying email for user_id={user.user_id}, email={user.email}"
+    )
     user.is_verified = True
     db.session.commit()
     current_app.logger.info(f"[VERIFY_EMAIL] SUCCESS - Email verified for {user.email}")
@@ -187,6 +204,7 @@ def verify_email(token):
 def resend_verification():
     """Resend verification email."""
     from flask import current_app
+
     data = request.get_json()
     email = data.get("email")
 
@@ -198,7 +216,9 @@ def resend_verification():
 
     user = User.query.filter_by(email=email).first()
     if not user:
-        current_app.logger.info(f"[RESEND_VERIFY] Email not found in database, returning generic response")
+        current_app.logger.info(
+            "[RESEND_VERIFY] Email not found in database, returning generic response"
+        )
         return (
             jsonify(
                 {"message": "If the email exists, a verification link has been sent"}
@@ -215,10 +235,12 @@ def resend_verification():
             200,
         )
 
-    current_app.logger.info(f"[RESEND_VERIFY] Generating new verification token for user_id={user.user_id}")
+    current_app.logger.info(
+        f"[RESEND_VERIFY] Generating new verification token for user_id={user.user_id}"
+    )
     user.verification_token = secrets.token_urlsafe(32)
     db.session.commit()
-    current_app.logger.info(f"[RESEND_VERIFY] New token saved to database")
+    current_app.logger.info("[RESEND_VERIFY] New token saved to database")
 
     verification_url = f"{current_app.config.get('FRONTEND_URL', 'http://localhost:5173')}/verify/{user.verification_token}"
     subject = "Verify your email - Dating App"
@@ -238,9 +260,13 @@ def resend_verification():
     current_app.logger.info(f"[RESEND_VERIFY] Calling send_email for {email}")
     email_result = send_email(user.email, subject, body)
     if email_result:
-        current_app.logger.info(f"[RESEND_VERIFY] Verification email sent successfully to {email}")
+        current_app.logger.info(
+            f"[RESEND_VERIFY] Verification email sent successfully to {email}"
+        )
     else:
-        current_app.logger.error(f"[RESEND_VERIFY] FAILED to send verification email to {email}")
+        current_app.logger.error(
+            f"[RESEND_VERIFY] FAILED to send verification email to {email}"
+        )
 
     return jsonify({"message": "Verification email sent"}), 200
 

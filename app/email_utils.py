@@ -30,19 +30,29 @@ def _send_resend_email(to_email, subject, body):
     api_url = current_app.config.get("RESEND_API_URL")
     from_email = current_app.config.get("EMAIL_FROM")
 
-    current_app.logger.info(f"[EMAIL] Resend configuration: api_key_set={'***' if api_key else 'NONE'}, api_url={api_url}, from_email={from_email}")
+    current_app.logger.info(
+        f"[EMAIL] Resend configuration: api_key_set={'***' if api_key else 'NONE'}, api_url={api_url}, from_email={from_email}"
+    )
 
     if not api_key:
-        current_app.logger.error("[EMAIL ERROR] RESEND_API_KEY is not configured in production environment")
-        current_app.logger.error(f"[EMAIL ERROR] Available env vars: RESEND_API_KEY={'***' if api_key else 'NOT SET'}, RESEND_API_URL={api_url}, EMAIL_FROM={from_email}")
+        current_app.logger.error(
+            "[EMAIL ERROR] RESEND_API_KEY is not configured in production environment"
+        )
+        current_app.logger.error(
+            f"[EMAIL ERROR] Available env vars: RESEND_API_KEY={'***' if api_key else 'NOT SET'}, RESEND_API_URL={api_url}, EMAIL_FROM={from_email}"
+        )
         return False
 
     if not from_email:
-        current_app.logger.error("[EMAIL ERROR] EMAIL_FROM is not configured in production environment")
-        current_app.logger.error("[EMAIL ERROR] EMAIL_FROM is required for Resend - must be a verified sender domain in Resend dashboard")
+        current_app.logger.error(
+            "[EMAIL ERROR] EMAIL_FROM is not configured in production environment"
+        )
+        current_app.logger.error(
+            "[EMAIL ERROR] EMAIL_FROM is required for Resend - must be a verified sender domain in Resend dashboard"
+        )
         return False
 
-    current_app.logger.info(f"[EMAIL] Preparing to send email via Resend API")
+    current_app.logger.info("[EMAIL] Preparing to send email via Resend API")
     current_app.logger.info(f"[EMAIL] To: {to_email}")
     current_app.logger.info(f"[EMAIL] Subject: {subject}")
     current_app.logger.info(f"[EMAIL] From: {from_email}")
@@ -70,29 +80,49 @@ def _send_resend_email(to_email, subject, body):
     )
 
     try:
-        current_app.logger.info(f"[EMAIL] Sending POST request to Resend API: {api_url}")
+        current_app.logger.info(
+            f"[EMAIL] Sending POST request to Resend API: {api_url}"
+        )
         with urlopen(request, timeout=30) as response:
             response_body = response.read().decode("utf-8")
-            current_app.logger.info(f"[EMAIL] Resend API response status: {response.status}")
-            current_app.logger.info(f"[EMAIL] Resend API response body: {response_body}")
+            current_app.logger.info(
+                f"[EMAIL] Resend API response status: {response.status}"
+            )
+            current_app.logger.info(
+                f"[EMAIL] Resend API response body: {response_body}"
+            )
 
             if 200 <= response.status < 300:
-                current_app.logger.info(f"[EMAIL] SUCCESS - Email sent successfully to {to_email}")
+                current_app.logger.info(
+                    f"[EMAIL] SUCCESS - Email sent successfully to {to_email}"
+                )
                 return True
 
-            current_app.logger.error(f"[EMAIL ERROR] Resend API returned status {response.status}: {response_body}")
+            current_app.logger.error(
+                f"[EMAIL ERROR] Resend API returned status {response.status}: {response_body}"
+            )
             return False
     except HTTPError as exc:
         error_body = exc.read().decode("utf-8", errors="replace")
-        current_app.logger.error(f"[EMAIL ERROR] Resend HTTP error: status={exc.code}, reason={exc.reason}, body={error_body}")
-        current_app.logger.error(f"[EMAIL ERROR] This usually means: 1) Sender email not verified in Resend, 2) API key is invalid, 3) Rate limit exceeded")
+        current_app.logger.error(
+            f"[EMAIL ERROR] Resend HTTP error: status={exc.code}, reason={exc.reason}, body={error_body}"
+        )
+        current_app.logger.error(
+            "[EMAIL ERROR] This usually means: 1) Sender email not verified in Resend, 2) API key is invalid, 3) Rate limit exceeded"
+        )
         return False
     except URLError as exc:
-        current_app.logger.error(f"[EMAIL ERROR] Network error reaching Resend API: {exc.reason}")
-        current_app.logger.error(f"[EMAIL ERROR] Check network connectivity and firewall settings")
+        current_app.logger.error(
+            f"[EMAIL ERROR] Network error reaching Resend API: {exc.reason}"
+        )
+        current_app.logger.error(
+            "[EMAIL ERROR] Check network connectivity and firewall settings"
+        )
         return False
     except Exception as exc:
-        current_app.logger.error(f"[EMAIL ERROR] Unexpected error sending email to {to_email}: {type(exc).__name__}: {exc}")
+        current_app.logger.error(
+            f"[EMAIL ERROR] Unexpected error sending email to {to_email}: {type(exc).__name__}: {exc}"
+        )
         current_app.logger.exception("[EMAIL ERROR] Full exception traceback:")
         return False
 
@@ -100,12 +130,18 @@ def _send_resend_email(to_email, subject, body):
 def _send_smtp_email(to_email, subject, body):
     mail_config = _get_mail_config()
 
-    current_app.logger.info(f"[EMAIL] Attempting SMTP fallback: host={mail_config['host']}, port={mail_config['port']}")
-    current_app.logger.info(f"[EMAIL] SMTP user configured: {bool(mail_config['user'])}, password configured: {bool(mail_config['password'])}")
+    current_app.logger.info(
+        "[EMAIL] Attempting SMTP fallback"
+    )
+    current_app.logger.info(
+        "[EMAIL] SMTP credentials configured"
+    )
 
     if not mail_config["user"] or not mail_config["password"]:
         if current_app.config.get("DEBUG"):
-            current_app.logger.info(f"[MOCK EMAIL] DEBUG mode - email not actually sent")
+            current_app.logger.info(
+                "[MOCK EMAIL] DEBUG mode - email not actually sent"
+            )
             current_app.logger.info(f"[MOCK EMAIL] To: {to_email}")
             current_app.logger.info(f"[MOCK EMAIL] Subject: {subject}")
             current_app.logger.info(f"[MOCK EMAIL] Body preview: {body[:200]}...")
@@ -116,8 +152,8 @@ def _send_smtp_email(to_email, subject, body):
 
     try:
         current_app.logger.info(
-            f"[EMAIL] Connecting to SMTP server: {mail_config['host']}:{mail_config['port']}"
-        )
+        "[EMAIL] Connecting to SMTP server"
+    )
 
         msg = EmailMessage()
         msg["From"] = mail_config["from_email"]
@@ -126,7 +162,9 @@ def _send_smtp_email(to_email, subject, body):
         msg.set_content("Please view this email in an HTML-compatible email client.")
         msg.add_alternative(body, subtype="html")
 
-        current_app.logger.info(f"[EMAIL] SMTP message prepared: from={mail_config['from_email']}, to={to_email}")
+        current_app.logger.info(
+            f"[EMAIL] SMTP message prepared: from={mail_config['from_email']}, to={to_email}"
+        )
 
         smtp_class = smtplib.SMTP_SSL if mail_config["use_ssl"] else smtplib.SMTP
         current_app.logger.info(f"[EMAIL] Using SMTP class: {smtp_class.__name__}")
@@ -145,40 +183,46 @@ def _send_smtp_email(to_email, subject, body):
         current_app.logger.info(f"[EMAIL] SUCCESS - Email sent to {to_email} via SMTP")
         return True
     except Exception as exc:
-        current_app.logger.error(f"[EMAIL ERROR] SMTP send failed: {type(exc).__name__}: {exc}")
+        current_app.logger.error(
+            f"[EMAIL ERROR] SMTP send failed: {type(exc).__name__}: {exc}"
+        )
         current_app.logger.exception("[EMAIL ERROR] Full SMTP exception traceback:")
         return False
 
 
 def send_email(to_email, subject, body):
     """Send an HTML email using the configured provider."""
-    current_app.logger.info(f"[EMAIL] ===== EMAIL REQUEST STARTED =====")
+    current_app.logger.info("===== EMAIL REQUEST STARTED =====")
     current_app.logger.info(f"[EMAIL] Target: {to_email}")
     current_app.logger.info(f"[EMAIL] Subject: {subject}")
 
     if not current_app.config.get("TESTING"):
         time.sleep(1)
     else:
-        current_app.logger.info(f"[MOCK EMAIL] TESTING mode enabled")
+        current_app.logger.info("[MOCK EMAIL] TESTING mode enabled")
         current_app.logger.info(f"[MOCK EMAIL] To: {to_email}")
         current_app.logger.info(f"[MOCK EMAIL] Subject: {subject}")
         current_app.logger.info(f"[MOCK EMAIL] Body preview: {body[:200]}...")
-        current_app.logger.info(f"[MOCK EMAIL] ===== EMAIL REQUEST COMPLETED =====")
+        current_app.logger.info("===== EMAIL REQUEST COMPLETED =====")
         return True
 
     provider = current_app.config.get("EMAIL_PROVIDER", "smtp").lower()
     current_app.logger.info(f"[EMAIL] Email provider configured: {provider}")
 
     if provider == "resend":
-        current_app.logger.info(f"[EMAIL] Using Resend API provider")
-        current_app.logger.info(f"[EMAIL] Checking Resend configuration...")
+        current_app.logger.info("[EMAIL] Using Resend API provider")
+        current_app.logger.info("[EMAIL] Checking Resend configuration...")
         result = _send_resend_email(to_email, subject, body)
-        current_app.logger.info(f"[EMAIL] Resend send result: {'SUCCESS' if result else 'FAILED'}")
-        current_app.logger.info(f"[EMAIL] ===== EMAIL REQUEST COMPLETED =====")
+        current_app.logger.info(
+            f"[EMAIL] Resend send result: {'SUCCESS' if result else 'FAILED'}"
+        )
+        current_app.logger.info("===== EMAIL REQUEST COMPLETED =====")
         return result
 
-    current_app.logger.info(f"[EMAIL] Using SMTP provider (fallback)")
+    current_app.logger.info("[EMAIL] Using SMTP provider (fallback)")
     result = _send_smtp_email(to_email, subject, body)
-    current_app.logger.info(f"[EMAIL] SMTP send result: {'SUCCESS' if result else 'FAILED'}")
+    current_app.logger.info(
+        f"[EMAIL] SMTP send result: {'SUCCESS' if result else 'FAILED'}"
+    )
     current_app.logger.info(f"[EMAIL] ===== EMAIL REQUEST COMPLETED =====")
     return result
