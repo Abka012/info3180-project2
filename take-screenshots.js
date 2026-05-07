@@ -1,167 +1,233 @@
 import { chromium } from "playwright";
-import { mkdirSync } from "fs";
+import { mkdirSync, existsSync } from "fs";
+import { dirname, join, resolve } from "path";
+import { fileURLToPath } from "url";
 
-// Create screenshot directory
-mkdirSync("docs/images", { recursive: true });
+// ===== 1. PATH SETUP (MUST COME FIRST) =====
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
+// Find project root by looking for package.json (most reliable method)
+let projectRoot = __dirname;
+while (projectRoot !== dirname(projectRoot)) {
+  if (existsSync(resolve(projectRoot, "package.json"))) {
+    break;
+  }
+  projectRoot = dirname(projectRoot);
+}
+
+// Allow env var override, fallback to detected root
+projectRoot = process.env.PROJECT_ROOT || projectRoot;
+
+// Define imagesDir AFTER projectRoot is set
+const imagesDir = join(__dirname, "docs", "images");
+mkdirSync(imagesDir, { recursive: true });
+
+// Debug logging
+console.log(`🔍 __dirname: ${__dirname}`);
+console.log(`🔍 projectRoot: ${projectRoot}`);
+console.log(`🔍 imagesDir: ${imagesDir}`);
+console.log(`🔍 CWD: ${process.cwd()}\n`);
+
+// ===== 2. CLI ARGS =====
+const args = process.argv.slice(2);
+const force = args.includes("--force");
+const routeArgs = args.filter((arg) => !arg.startsWith("--"));
+
+// ===== 3. ROUTES TO CAPTURE =====
+const defaultRoutes = [
+  { path: "/", slug: "home", waitFor: "h1" },
+  { path: "/register", slug: "register", waitFor: "form" },
+  { path: "/login", slug: "login", waitFor: "form" },
+  { path: "/about", slug: "about", waitFor: ".features" },
+  { path: "/browse", slug: "browse", waitFor: ".browse-container", auth: true },
+  { path: "/search", slug: "search", waitFor: ".search-form", auth: true },
+  { path: "/matches", slug: "matches", waitFor: "h1", auth: true },
+  {
+    path: "/messages",
+    slug: "conversations",
+    waitFor: "body",
+    auth: true,
+  },
+  { path: "/favorites", slug: "favorites", waitFor: "h1", auth: true },
+  { path: "/profile/edit", slug: "profile-edit", waitFor: "form", auth: true },
+  { path: "/notifications", slug: "notifications", waitFor: "h1", auth: true },
+  { path: "/messages/2", slug: "chat", waitFor: ".chat-container", auth: true },
+  { path: "/nonexistent", slug: "404", waitFor: "body" },
+];
+
+const routesToCapture =
+  routeArgs.length > 0
+    ? defaultRoutes.filter((r) =>
+        routeArgs.some((arg) => r.path.startsWith(arg)),
+      )
+    : defaultRoutes;
+
+// ===== 4. SCREENSHOT FUNCTION =====
+const takeScreenshot = async (page, url, slug, waitFor, theme) => {
+  const filename = `${theme}-${slug}.png`;
+  const filepath = resolve(imagesDir, filename);
+
+  console.log(`💾 Target: ${filepath}`);
+
+  if (existsSync(filepath) && !force) {
+    console.log(`⏭️  Skipping: docs/images/${filename}`);
+    return true;
+  }
+
+  const fullUrl = `http://127.0.0.1:5173${url}`;
+  console.log(`📸 Capturing ${theme} mode: ${slug}...`);
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      // Set theme BEFORE any page JS runs
+      await page.addInitScript((t) => {
+        try {
+          localStorage.setItem("theme", t);
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {
+          /* ignore */
+        }
+      }, theme);
+
+      // Navigate + reload to guarantee theme applies
+      await page.goto(fullUrl, { waitUntil: "commit", timeout: 20000 });
+      await page.reload({ waitUntil: "networkidle", timeout: 20000 });
+
+      await page.waitForSelector(waitFor, { timeout: 10000 });
+
+      // Wait for CSS variable to reflect theme
+      await page.waitForFunction(
+        (t) => {
+          const bg = getComputedStyle(document.documentElement)
+            .getPropertyValue("--bg")
+            .trim();
+          const isDark =
+            bg.startsWith("#0") || bg.startsWith("#1") || bg === "#0f172a";
+          return t === "dark" ? isDark : !isDark;
+        },
+        theme,
+        { timeout: 8000 },
+      );
+
+      await page.waitForTimeout(1000);
+      await page.screenshot({ path: filepath, fullPage: true });
+
+      const relativePath = filepath.replace(projectRoot, ".");
+      console.log(`✅ Saved: ${relativePath}`);
+      return true;
+    } catch (error) {
+      if (attempt < 3) {
+        console.warn(
+          `⚠️  Attempt ${attempt} failed for ${slug} (${theme}). Retrying...`,
+        );
+        await page.waitForTimeout(2000);
+      } else {
+        // Debug theme state on failure
+        try {
+          const debug = await page.evaluate(() => ({
+            attr: document.documentElement.getAttribute("data-theme"),
+            storage: localStorage.getItem("theme"),
+            bg: getComputedStyle(document.documentElement)
+              .getPropertyValue("--bg")
+              ?.trim(),
+            url: window.location.href,
+          }));
+          console.error(`❌ Theme debug ${slug} (${theme}):`, debug);
+        } catch (e) {
+          // Ignore errors for optional debug logging
+        }
+
+        console.error(`❌ Failed: ${slug} (${theme}) - ${error.message}`);
+        return false;
+      }
+    }
+  }
+};
+
+// ===== 5. MAIN EXECUTION =====
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
   const page = await context.newPage();
   await page.setViewportSize({ width: 1280, height: 800 });
 
-  console.log("Starting screenshots...");
+  console.log("🎯 Starting dual-theme capture...\n");
+  const results = { success: [], failed: [] };
 
-  try {
-    // 1. Registration form
-    console.log("Taking screenshot: docs/images/registration-form.png...");
-    await page.goto("http://127.0.0.1:5173/register", { waitUntil: "networkidle" });
-    await page.screenshot({ path: "docs/images/registration-form.png", fullPage: true });
+  // Capture unauthenticated routes
+  for (const route of routesToCapture.filter((r) => !r.auth)) {
+    for (const theme of ["light", "dark"]) {
+      const success = await takeScreenshot(
+        page,
+        route.path,
+        route.slug,
+        route.waitFor,
+        theme,
+      );
+      const key = `${theme}-${route.slug}`;
+      (success ? results.success : results.failed).push(key);
+    }
+  }
 
-    // 2. Login form
-    console.log("Taking screenshot: docs/images/login-form.png...");
-    await page.goto("http://127.0.0.1:5173/login", { waitUntil: "networkidle" });
-    await page.screenshot({ path: "docs/images/login-form.png", fullPage: true });
+  // Login for authenticated routes
+  if (routesToCapture.some((r) => r.auth)) {
+    console.log("\n🔐 Logging in for authenticated screenshots...");
+    try {
+      await page.goto("http://127.0.0.1:5173/login", {
+        waitUntil: "networkidle",
+      });
+      await page.fill("#email", "user1@test.com");
+      await page.fill("#password", "password123");
 
-    // 3. About page
-    console.log("Taking screenshot: docs/images/about-page.png...");
-    await page.goto("http://127.0.0.1:5173/about", { waitUntil: "networkidle" });
-    await page.screenshot({ path: "docs/images/about-page.png", fullPage: true });
+      const [request] = await Promise.all([
+        page.waitForRequest(
+          (req) =>
+            req.url().includes("/api/auth/login") && req.method() === "POST",
+        ),
+        page.click('button[type="submit"]'),
+      ]);
 
-    // 4. 404 page
-    console.log("Taking screenshot: docs/images/notfound-page.png...");
-    await page.goto("http://127.0.0.1:5173/nonexistent-page", { waitUntil: "networkidle" });
-    await page.screenshot({ path: "docs/images/notfound-page.png", fullPage: true });
+      const response = await request.response();
+      if (!response?.ok())
+        throw new Error(`Login failed: ${response?.status()}`);
 
-    // --- Login Step ---
-    console.log("Logging in for authenticated screenshots...");
-    await page.goto("http://127.0.0.1:5173/login", { waitUntil: "networkidle" });
-    await page.fill("#email", "user1@test.com");
-    await page.fill("#password", "password123");
-    await page.click('button[type="submit"]');
-    
-    // Wait for the login to complete and navigate to home
-    await page.waitForURL("http://127.0.0.1:5173/", { timeout: 10000 });
-    await page.waitForTimeout(3000); 
-    console.log("Login successful!");
+      await page.waitForURL("http://127.0.0.1:5173/**", { timeout: 15000 });
+      await page.waitForTimeout(2000);
+      console.log("✅ Login successful!\n");
 
-    const takeAuthScreenshot = async (url, path, waitForSelector = "body", action = null) => {
-      console.log("Taking screenshot: " + path + "...");
-      await page.goto(url, { waitUntil: "networkidle", timeout: 20000 });
-      try {
-        await page.waitForSelector(waitForSelector, { timeout: 10000 });
-      } catch (e) {
-        console.warn("Warning: Selector " + waitForSelector + " not found for " + url + ". Still taking screenshot.");
+      for (const route of routesToCapture.filter((r) => r.auth)) {
+        for (const theme of ["light", "dark"]) {
+          const success = await takeScreenshot(
+            page,
+            route.path,
+            route.slug,
+            route.waitFor,
+            theme,
+          );
+          const key = `${theme}-${route.slug}`;
+          (success ? results.success : results.failed).push(key);
+        }
       }
-      if (action) {
-        await action(page);
-      }
-      await page.waitForTimeout(1000); // Animation buffer
-      await page.screenshot({ path: path, fullPage: true });
-    };
+    } catch (error) {
+      console.error("❌ Login failed:", error.message);
+      results.failed.push("login");
+    }
+  }
 
-    // 5. Browse page
-    await takeAuthScreenshot(
-      "http://127.0.0.1:5173/browse",
-      "docs/images/browse-page.png",
-      ".profile-card" 
-    );
+  await browser.close();
 
-    // 6. Profile edit page
-    await takeAuthScreenshot(
-      "http://127.0.0.1:5173/profile/edit",
-      "docs/images/profile-form.png",
-      "form"
-    );
-
-    // 7. Matches page
-    await takeAuthScreenshot(
-      "http://127.0.0.1:5173/matches",
-      "docs/images/mutual-matches.png"
-    );
-
-    // 8. Search page
-    await takeAuthScreenshot(
-      "http://127.0.0.1:5173/search",
-      "docs/images/search-page.png"
-    );
-
-    // 9. Favorites page
-    await takeAuthScreenshot(
-      "http://127.0.0.1:5173/favorites",
-      "docs/images/favorites-page.png"
-    );
-
-    // 10. Conversations list
-    await takeAuthScreenshot(
-      "http://127.0.0.1:5173/messages",
-      "docs/images/conversations-list.png"
-    );
-
-    // 11. Notifications page
-    await takeAuthScreenshot(
-      "http://127.0.0.1:5173/notifications",
-      "docs/images/notifications-panel.png"
-    );
-
-    // 12. Chat window
-    await takeAuthScreenshot(
-      "http://127.0.0.1:5173/messages/2",
-      "docs/images/chat-window.png"
-    );
-
-    // --- New Screenshots ---
-
-    // 13. Age preferences (Search page)
-    await takeAuthScreenshot(
-      "http://127.0.0.1:5173/search",
-      "docs/images/age-preferences.png",
-      ".age-inputs"
-    );
-
-    // 14. Upload picture (Profile page)
-    await takeAuthScreenshot(
-      "http://127.0.0.1:5173/profile",
-      "docs/images/upload-picture.png",
-      ".upload-btn"
-    );
-
-    // 15. Match score explanation (Browse page)
-    await takeAuthScreenshot(
-      "http://127.0.0.1:5173/browse",
-      "docs/images/match-score-explanation.png",
-      ".match-badge"
-    );
-
-    // 16. Bookmark button (Search page)
-    await takeAuthScreenshot(
-      "http://127.0.0.1:5173/search",
-      "docs/images/bookmark-button.png",
-      ".search-form",
-      async (p) => {
-        // Trigger a search to show results
-        await p.click(".btn-search");
-        await p.waitForSelector(".btn-bookmark", { timeout: 5000 });
-      }
-    );
-
-    // 17. Notification dropdown (Any page, but home is fine)
-    await takeAuthScreenshot(
-      "http://127.0.0.1:5173/",
-      "docs/images/notification-dropdown.png",
-      "header",
-      async (p) => {
-        // Find the avatar dropdown button and click it
-        // The button has an SVG chevron down
-        await p.click("header button:has(svg path[d*='M19 9l-7 7-7-7'])");
-        await p.waitForSelector(".dropdown-item", { timeout: 5000 });
-      }
-    );
-
-    console.log("All screenshots taken successfully!");
-  } catch (error) {
-    console.error("Error taking screenshots:", error);
-  } finally {
-    await browser.close();
+  // Summary
+  console.log("\n" + "=".repeat(60));
+  console.log("📊 SCREENSHOT SUMMARY");
+  console.log("=".repeat(60));
+  console.log(`✅ Success: ${results.success.length}`);
+  console.log(`❌ Failed: ${results.failed.length}`);
+  if (results.failed.length > 0) {
+    console.log("\nFailed:", results.failed.join(", "));
+    process.exit(1);
+  } else {
+    console.log("\n✅ All screenshots captured!");
+    process.exit(0);
   }
 })();

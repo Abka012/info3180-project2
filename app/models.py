@@ -6,10 +6,14 @@ data entities, including users, profiles, matches, messages, and notifications.
 """
 
 import secrets
-import string
 from datetime import datetime, timezone
 
-from app import db
+from app import db  # Import db from app/__init__.py
+from flask_login import UserMixin
+from app import login_manager  # Import login_manager from __init__.py
+
+# Import JSON type for interests column
+from sqlalchemy.types import JSON
 
 
 def utc_now():
@@ -23,24 +27,28 @@ def utc_now():
 
 
 def generate_verification_token():
-    """
-    Generate a random verification token.
-
-    Returns:
-        Random 64-character alphanumeric string
-    """
-    return "".join(
-        secrets.choice(string.ascii_letters + string.digits) for _ in range(64)
-    )
+    """Generate a secure verification token."""
+    return secrets.token_urlsafe(32)
 
 
-class User(db.Model):
+# Initialize LoginManager and set user_loader
+# Note: LoginManager is initialized in __init__.py, so we import it.
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
+# --- Models ---
+
+
+class User(UserMixin, db.Model):
     """
     User model representing application users.
 
     Attributes:
-        user_id: Primary key
+        id: Primary key
         email: User's email address (unique)
+        username: User's username (unique)
         password_hash: Hashed password
         is_verified: Email verification status
         verification_token: Token for email verification
@@ -54,8 +62,11 @@ class User(db.Model):
 
     __tablename__ = "users"
 
-    user_id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    username = db.Column(
+        db.String(80), unique=True, nullable=False, index=True
+    )  # Kept from existing model, aligns with ER diagram description
     password_hash = db.Column(db.String(128), nullable=False)
     is_verified = db.Column(db.Boolean, default=False)
     verification_token = db.Column(
@@ -64,209 +75,212 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=utc_now)
     last_active = db.Column(db.DateTime, default=utc_now)
 
-    profile = db.relationship(
-        "Profile", backref="user", uselist=False, cascade="all, delete-orphan"
+    def set_password(self, password):
+        from app import bcrypt
+
+        self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
+
+    def check_password(self, password):
+        from app import bcrypt
+
+        return bcrypt.check_password_hash(self.password_hash, password)
+
+    # Relationships
+    sent_messages = db.relationship(
+        "Message", foreign_keys="Message.sender_id", backref="sender", lazy=True
+    )
+    received_messages = db.relationship(
+        "Message", foreign_keys="Message.receiver_id", backref="receiver", lazy=True
     )
     likes_sent = db.relationship(
-        "Like", foreign_keys="Like.from_user_id", backref="from_user", lazy="dynamic"
+        "Like", foreign_keys="Like.from_user_id", backref="liker", lazy=True
     )
     likes_received = db.relationship(
-        "Like", foreign_keys="Like.to_user_id", backref="to_user", lazy="dynamic"
+        "Like", foreign_keys="Like.to_user_id", backref="liked_user", lazy=True
     )
-    notifications = db.relationship(
+    matches_initiated = db.relationship(
+        "Match", foreign_keys="Match.user1_id", backref="user1", lazy=True
+    )
+    matches_received = db.relationship(
+        "Match", foreign_keys="Match.user2_id", backref="user2", lazy=True
+    )
+    # Profile relationship - A user has one profile
+    profile = db.relationship(
+        "Profile", backref="user", uselist=False, cascade="all,delete-orphan", lazy=True
+    )
+
+    # Foreign keys for notifications
+    user_notifications = db.relationship(
         "Notification",
         foreign_keys="Notification.user_id",
-        backref="user",
-        lazy="dynamic",
-        cascade="all, delete-orphan",
+        back_populates="recipient",
+        lazy=True,
+        overlaps="received_notifications,recipient_user",
+    )
+    triggered_notifications = db.relationship(
+        "Notification",
+        foreign_keys="Notification.from_user_id",
+        back_populates="notifier",
+        lazy=True,
+        overlaps="sent_notifications,notifier_user",
     )
 
-    def to_dict(self):
-        return {
-            "id": self.user_id,
-            "email": self.email,
-            "hashed_password": self.password_hash,
-            "is_verified": self.is_verified,
-            "verification_token": self.verification_token,
-            "created_at": self.created_at,
-            "last_active": self.last_active,
-        }
+    def get_id(self):
+        return str(self.id)  # Flask-Login expects get_id() method
+
+    @property
+    def user_id(self):
+        return self.id
 
     def __repr__(self):
-        return f"<User {self.email}>"
+        return f"<User {self.username}>"
 
 
 class Profile(db.Model):
     """
-    Profile model representing user profiles.
+    Profile model storing public-facing dating profile data for a user.
 
     Attributes:
         profile_id: Primary key
-        user_id: Foreign key to User
-        name: User's name
-        age: User's age
-        bio: User's biography
-        preferred_age_min: Minimum age preference for matches
-        preferred_age_max: Maximum age preference for matches
-        interests: List of user interests
-        profile_picture: URL/path to profile picture
-        visibility: Whether profile is public
-        gender: User's gender
-        gender_preference: Gender preference for matches
-        relationship_goal: User's relationship goal
-        occupation: User's occupation
+        user_id: Foreign key linking to the User (one-to-one)
+        name: Display name
+        age: Age used in discovery
+        bio: Free-form profile description
+        preferred_age_min: Minimum preferred age for matches
+        preferred_age_max: Maximum preferred age for matches
+        interests: Interest tags (JSON array)
+        profile_picture: Filename of the uploaded profile picture
+        visibility: Public/private profile flag
+        gender: User gender
+        gender_preference: Preferred gender for matches
+        relationship_goal: Desired relationship type
+        occupation: Occupation text
         created_at: Profile creation timestamp
-        updated_at: Last update timestamp
+        updated_at: Profile last modification timestamp
     """
 
     __tablename__ = "profiles"
-    __table_args__ = (
-        db.Index("ix_profiles_visibility_created_at", "visibility", "created_at"),
-        db.Index("ix_profiles_gender_age", "gender", "age"),
-        db.Index("ix_profiles_relationship_goal", "relationship_goal"),
-    )
 
     profile_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
-        db.Integer, db.ForeignKey("users.user_id"), nullable=False, unique=True
+        db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False
     )
-
     name = db.Column(db.String(100), nullable=False)
     age = db.Column(db.Integer, nullable=False)
-    bio = db.Column(db.Text)
-
-    # Age preferences
+    bio = db.Column(db.Text, nullable=True)
     preferred_age_min = db.Column(db.Integer, default=18)
     preferred_age_max = db.Column(db.Integer, default=50)
-
-    interests = db.Column(db.JSON, default=list)
-
-    profile_picture = db.Column(db.String(255))
-
+    interests = db.Column(JSON, default=list)  # Use default=list for empty list
+    profile_picture = db.Column(db.String(255), nullable=True)
     visibility = db.Column(db.Boolean, default=True)
-
-    gender = db.Column(db.String(50))
+    gender = db.Column(db.String(50), nullable=True)
     gender_preference = db.Column(db.String(50), default="all")
-
-    relationship_goal = db.Column(db.String(50))
-    occupation = db.Column(db.String(100))
-
+    relationship_goal = db.Column(db.String(50), nullable=True)
+    occupation = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, default=utc_now, index=True)
-    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    updated_at = db.Column(
+        db.DateTime, default=utc_now, onupdate=utc_now
+    )  # Use onupdate for automatic updates
+
+    def __repr__(self):
+        return f"<Profile {self.profile_id} for User {self.user_id}>"
 
     def to_dict(self):
         return {
-            "id": self.profile_id,
+            "profile_id": self.profile_id,
             "user_id": self.user_id,
             "name": self.name,
             "age": self.age,
             "bio": self.bio,
-            "preferred_age_min": self.preferred_age_min,
-            "preferred_age_max": self.preferred_age_max,
-            "interests": self.interests or [],
-            "profile_picture": self.profile_picture,
-            "visibility": self.visibility,
             "gender": self.gender,
             "gender_preference": self.gender_preference,
+            "interests": self.interests or [],
             "relationship_goal": self.relationship_goal,
             "occupation": self.occupation,
+            "profile_picture": self.profile_picture,
+            "visibility": self.visibility,
+            "preferred_age_min": self.preferred_age_min,
+            "preferred_age_max": self.preferred_age_max,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
 
-    def __repr__(self):
-        return f"<Profile {self.name}>"
-
 
 class Like(db.Model):
     """
-    Like model representing user likes/dislikes.
+    Model for user likes/dislikes/passes.
 
     Attributes:
         like_id: Primary key
-        from_user_id: User who sent the like
-        to_user_id: User who received the like
-        status: Type of interaction (liked, disliked, passed)
-        created_at: Timestamp when like was created
+        from_user_id: User initiating the action
+        to_user_id: User receiving the action
+        status: Type of action ('liked', 'disliked', 'passed')
+        created_at: Timestamp of the action
     """
 
     __tablename__ = "likes"
 
     like_id = db.Column(db.Integer, primary_key=True)
-    from_user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
-    to_user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
-    status = db.Column(db.String(20), default="liked")  # 'liked', 'disliked', 'passed'
+    from_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    to_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    status = db.Column(db.String(20), default="liked")
     created_at = db.Column(db.DateTime, default=utc_now, index=True)
 
+    # Constraint: UNIQUE(from_user_id, to_user_id) ensures a user can only have one active row per target user.
     __table_args__ = (
-        db.UniqueConstraint("from_user_id", "to_user_id", name="unique_like"),
-        db.Index("ix_likes_to_user_status", "to_user_id", "status"),
+        db.UniqueConstraint("from_user_id", "to_user_id", name="uq_user_like"),
     )
 
-    def to_dict(self):
-        return {
-            "id": self.like_id,
-            "from_user_id": self.from_user_id,
-            "to_user_id": self.to_user_id,
-            "status": self.status,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-        }
+    def __repr__(self):
+        return (
+            f"<Like from {self.from_user_id} to {self.to_user_id} status {self.status}>"
+        )
 
 
 class Match(db.Model):
     """
-    Match model representing mutual matches between users.
+    Model for mutual matches between two users.
 
     Attributes:
         match_id: Primary key
-        user1_id: First user in the match
-        user2_id: Second user in the match
-        created_at: Timestamp when match was created
-        user1: Relationship to first user
-        user2: Relationship to second user
+        user1_id: ID of the first matched user
+        user2_id: ID of the second matched user
+        created_at: Timestamp of the match
     """
 
     __tablename__ = "matches"
 
     match_id = db.Column(db.Integer, primary_key=True)
-    user1_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
-    user2_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+    user1_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    user2_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     created_at = db.Column(db.DateTime, default=utc_now, index=True)
 
-    user1 = db.relationship("User", foreign_keys=[user1_id])
-    user2 = db.relationship("User", foreign_keys=[user2_id])
-
+    # Constraint: UNIQUE(user1_id, user2_id) ensures a match is recorded only once between two users.
     __table_args__ = (
-        db.UniqueConstraint("user1_id", "user2_id", name="unique_match"),
-        db.Index("ix_matches_user1_created_at", "user1_id", "created_at"),
-        db.Index("ix_matches_user2_created_at", "user2_id", "created_at"),
+        db.UniqueConstraint("user1_id", "user2_id", name="uq_mutual_match"),
     )
 
-    def to_dict(self, include_profiles=False):
-        result = {
-            "id": self.match_id,
-            "user1_id": self.user1_id,
-            "user2_id": self.user2_id,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-        }
-        return result
+    def __repr__(self):
+        return f"<Match {self.match_id} between {self.user1_id} and {self.user2_id}>"
 
 
+# Notification model (adjusted based on markdown, maintaining existing logic)
 class Notification(db.Model):
     """
-    Notification model representing user notifications.
+    Notification model representing user notifications for events like likes, matches, and messages.
 
     Attributes:
         notification_id: Primary key
-        user_id: User who receives the notification
-        type: Type of notification (match, like, message)
+        user_id: User who receives the notification (FK to users.id)
+        type: Type of notification ('match', 'like', 'message')
         message: Notification message content
-        from_user_id: User who triggered the notification
+        from_user_id: User who triggered the notification (FK to users.id, nullable)
         is_read: Whether notification has been read
         created_at: Timestamp when notification was created
     """
 
     __tablename__ = "notifications"
+    # Indices as per markdown and existing code for efficient lookups.
     __table_args__ = (
         db.Index(
             "ix_notifications_user_read_created",
@@ -278,16 +292,37 @@ class Notification(db.Model):
     )
 
     notification_id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id"), nullable=False
+    )  # FK to users.id
     type = db.Column(db.String(50), nullable=False)  # 'match', 'like', 'message'
     message = db.Column(db.String(255), nullable=False)
-    from_user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=True)
+    from_user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id"), nullable=True
+    )  # FK to users.id
     is_read = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=utc_now, index=True)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
-    gets = db.relationship("User", foreign_keys=[from_user_id])
+    # Relationships to User, ensuring correct foreign key mapping
+    # recipient maps to user_id (the user receiving the notification)
+    recipient = db.relationship(
+        "User",
+        foreign_keys=[user_id],
+        back_populates="user_notifications",
+        lazy=True,
+        overlaps="received_notifications,recipient_user",
+    )
+    # notifier maps to from_user_id (the user who triggered the notification)
+    notifier = db.relationship(
+        "User",
+        foreign_keys=[from_user_id],
+        back_populates="triggered_notifications",
+        lazy=True,
+        overlaps="sent_notifications,notifier_user",
+    )
 
     def to_dict(self):
+        """Converts notification object to a dictionary for API responses."""
         return {
             "id": self.notification_id,
             "user_id": self.user_id,
@@ -301,22 +336,28 @@ class Notification(db.Model):
 
 class Message(db.Model):
     """
-    Message model representing private messages between users.
+    Model for chat messages between matched users.
 
     Attributes:
         message_id: Primary key
-        sender_id: User who sent the message
-        receiver_id: User who received the message
-        content: Message content
-        created_at: Timestamp when message was created
-        read_at: Timestamp when message was read
-        sender: Relationship to sender user
-        receiver: Relationship to receiver user
+        sender_id: ID of the user sending the message (FK to users.id)
+        receiver_id: ID of the user receiving the message (FK to users.id)
+        content: The message body
+        created_at: Timestamp of the message
+        read_at: Timestamp when the message was read (nullable)
     """
 
     __tablename__ = "messages"
+
+    message_id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    receiver_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=utc_now, index=True)
+    read_at = db.Column(db.DateTime, nullable=True)
+
+    # Indexing for efficient retrieval of conversations and unread message counts.
     __table_args__ = (
-        db.Index("ix_messages_receiver_read", "receiver_id", "read_at"),
         db.Index(
             "ix_messages_sender_receiver_created",
             "sender_id",
@@ -329,64 +370,51 @@ class Message(db.Model):
             "sender_id",
             "created_at",
         ),
+        db.Index(
+            "ix_messages_receiver_read", "receiver_id", "read_at"
+        ),  # Useful for checking unread messages for a receiver
     )
 
-    message_id = db.Column(db.Integer, primary_key=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
-    receiver_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=utc_now, index=True)
-    read_at = db.Column(db.DateTime, nullable=True)
+    def __repr__(self):
+        return f"<Message from {self.sender_id} to {self.receiver_id} at {self.created_at}>"
 
-    sender = db.relationship("User", foreign_keys=[sender_id])
-    receiver = db.relationship("User", foreign_keys=[receiver_id])
-
-    def to_dict(self):
+    def to_dict_extended(self, current_user_id):
+        is_sender = self.sender_id == current_user_id
         return {
-            "id": self.message_id,
+            "message_id": self.message_id,
             "sender_id": self.sender_id,
             "receiver_id": self.receiver_id,
             "content": self.content,
+            "is_sender": is_sender,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "read_at": self.read_at.isoformat() if self.read_at else None,
-            "is_read": self.read_at is not None,
         }
-
-    def to_dict_extended(self, current_user_id):
-        data = self.to_dict()
-        data["is_sent"] = self.sender_id == current_user_id
-        return data
 
 
 class Bookmark(db.Model):
     """
-    Bookmark model representing user bookmarks/favorites.
+    Model for users saving profiles for later review.
 
     Attributes:
         bookmark_id: Primary key
+        user_id: User creating the bookmark (FK to users.id)
+        bookmarked_user_id: The user being bookmarked (FK to users.id)
+        created_at: Timestamp of the bookmark creation
     """
 
-    __tablename__ = "bookmark"
+    __tablename__ = "bookmark"  # As per markdown: 'bookmark' (singular)
 
     bookmark_id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     bookmarked_user_id = db.Column(
-        db.Integer, db.ForeignKey("users.user_id"), nullable=False
+        db.Integer, db.ForeignKey("users.id"), nullable=False
     )
     created_at = db.Column(db.DateTime, default=utc_now, index=True)
 
-    user = db.relationship("User", foreign_keys=[user_id])
-    bookmarks = db.relationship("User", foreign_keys=[bookmarked_user_id])
-
+    # Constraint: UNIQUE(user_id, bookmarked_user_id) ensures a user can only bookmark another user once.
     __table_args__ = (
-        db.UniqueConstraint("user_id", "bookmarked_user_id", name="unique_bookmark"),
-        db.Index("ix_bookmark_user_created_at", "user_id", "created_at"),
+        db.UniqueConstraint("user_id", "bookmarked_user_id", name="uq_user_bookmark"),
     )
 
-    def to_dict(self):
-        return {
-            "id": self.bookmark_id,
-            "user_id": self.user_id,
-            "bookmarked_user_id": self.bookmarked_user_id,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-        }
+    def __repr__(self):
+        return f"<Bookmark by {self.user_id} for {self.bookmarked_user_id}>"

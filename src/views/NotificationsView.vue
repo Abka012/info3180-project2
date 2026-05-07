@@ -140,47 +140,49 @@ onUnmounted(() => {
 }
 
 h1 {
-  color: #e91e63;
+  color: var(--danger);
   margin: 0;
 }
 
 .mark-all-btn {
   padding: 8px 16px;
-  background: #f5f5f5;
-  border: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 6px;
   cursor: pointer;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .mark-all-btn:hover {
-  background: #eee;
+  background: var(--border);
 }
 
 .loading {
   text-align: center;
   padding: 60px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .no-notifications {
   text-align: center;
   padding: 60px;
-  background: white;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 12px;
 }
 
 .no-notifications h3 {
-  color: #333;
+  color: var(--text-secondary);
   margin-bottom: 10px;
 }
 
 .no-notifications p {
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .notifications-list {
-  background: white;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -190,17 +192,17 @@ h1 {
   align-items: center;
   gap: 15px;
   padding: 15px 20px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .notification-item:hover {
-  background: #f9f9f9;
+  background: var(--surface);
 }
 
 .notification-item.unread {
-  background: #fce4ec;
+  background: var(--surface);
 }
 
 .notification-icon {
@@ -213,19 +215,19 @@ h1 {
 
 .notification-message {
   margin: 0 0 5px 0;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .notification-time {
   margin: 0;
   font-size: 12px;
-  color: #999;
+  color: var(--text-secondary);
 }
 
 .unread-dot {
   width: 10px;
   height: 10px;
-  background: #e91e63;
+  background: var(--danger);
   border-radius: 50%;
 }
 </style>

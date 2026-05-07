@@ -93,7 +93,7 @@ export const authService = {
    * @param {string} password - User password
    * @returns {Promise<object>} Registration response
    */
-  async register(email, password) {
+  async register(name, email, password) {
     // Validate email
     if (!validateEmail(email)) {
       throw new Error("Please enter a valid email address");
@@ -106,6 +106,7 @@ export const authService = {
     }
 
     const response = await api.post("/api/auth/register", {
+      name, // Add this line
       email,
       password,
       confirm_password: password,

@@ -1,44 +1,33 @@
 <template>
-  <footer
-    class="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-auto"
-  >
+  <footer class="bg-[var(--surface)] border-t border-[var(--border)] mt-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="flex items-center space-x-2">
           <div
-            class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center"
+            class="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center"
           >
-            <span class="text-white font-bold text-sm">D</span>
+            <span class="text-[var(--text-primary)] font-bold text-sm">D</span>
           </div>
-          <span class="text-lg font-bold text-gray-700 dark:text-gray-300">
+          <span class="text-lg font-bold text-[var(--text-secondary)]">
             DriftDater
           </span>
         </div>
 
         <div
-          class="flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400"
+          class="flex items-center space-x-6 text-sm text-[var(--text-secondary)]"
         >
-          <router-link
-            to="/about"
-            class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-          >
+          <router-link to="/about" class="transition-colors">
             About
           </router-link>
-          <router-link
-            to="/login"
-            class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-          >
+          <router-link to="/login" class="transition-colors">
             Login
           </router-link>
-          <router-link
-            to="/register"
-            class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-          >
+          <router-link to="/register" class="transition-colors">
             Register
           </router-link>
         </div>
 
-        <div class="text-sm text-gray-500 dark:text-gray-400">
+        <div class="text-sm text-[var(--text-secondary)]">
           &copy; {{ year }} DriftDater. All rights reserved.
         </div>
       </div>

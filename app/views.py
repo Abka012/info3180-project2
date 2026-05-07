@@ -1,111 +1,84 @@
-"""
-Main application views and API endpoints.
-
-This module contains all the Flask blueprint routes for the main application,
-including authentication, user management, profile operations, and other core functionality.
-"""
-
+from flask import (
+    Blueprint,
+    current_app,
+    jsonify,
+    request,
+    redirect,
+    url_for,
+    render_template,
+    flash,
+)
+from flask_login import current_user, login_required, login_user, logout_user
+from app.models import (
+    User,
+    Message,
+    Notification,
+    Match,
+    Like,
+)  # Import necessary models
+from app import (
+    db,
+    socketio,
+    limiter,
+)  # Import db, socketio, limiter from app/__init__.py
+from werkzeug.utils import secure_filename
+import jwt
 import os
 import re
-import time
-from datetime import datetime, timedelta, timezone
-from functools import wraps
+from datetime import datetime
+import uuid
 
-import jwt
-from flask import Blueprint, current_app, g, jsonify, request
-from werkzeug.utils import secure_filename
+bp = Blueprint("views", __name__)
 
-from app import bcrypt, db
-from app.email_utils import send_email
-from app.forms import LoginForm, ProfileForm, RegistrationForm
-from app.models import Profile, User
-
-bp = Blueprint("main", __name__)
-
-# Rate limiting storage (in production, use Redis)
-rate_limit_store = {}
+# Rate limiting configuration (already set up in app/__init__.py or here if separated)
+# limiter = Limiter(key_func=get_remote_address, default_limits=["200 per day", "50 per hour"])
+# limiter.init_app(app) # Re-initialize if limiter is imported from __init__
 
 
-def rate_limit(max_requests=5, window_seconds=300):
-    """
-    Rate limiting decorator for API endpoints.
+# --- Helper Functions ---
+def allowed_file(filename):
+    return (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower()
+        in current_app.config["ALLOWED_EXTENSIONS"]
+    )
 
-    Args:
-        max_requests: Maximum number of requests allowed in the time window
-        window_seconds: Time window in seconds for rate limiting
 
-    Returns:
-        Decorator function that enforces rate limits on the wrapped endpoint
-    """
-
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            if current_app.config.get("TESTING"):
-                return f(*args, **kwargs)
-
-            # Get client identifier (IP or user_id)
-            client_id = request.remote_addr
-            if hasattr(g, "user") and g.user:
-                client_id = f"user_{g.user.user_id}"
-
-            current_time = time.time()
-            window_key = (
-                f"{client_id}:{request.endpoint}:{int(current_time // window_seconds)}"
-            )
-
-            # Check rate limit
-            if window_key in rate_limit_store:
-                request_count, _ = rate_limit_store[window_key]
-                if request_count >= max_requests:
-                    return (
-                        jsonify(
-                            {
-                                "error": "Too many requests. Please try again later.",
-                                "retry_after": window_seconds,
-                            }
-                        ),
-                        429,
-                    )
-
-            # Increment counter
-            if window_key not in rate_limit_store:
-                rate_limit_store[window_key] = (0, current_time)
-
-            request_count, _ = rate_limit_store[window_key]
-            rate_limit_store[window_key] = (request_count + 1, current_time)
-
-            # Clean old entries
-            cutoff = current_time - (window_seconds * 2)
-            rate_limit_store.update(
-                {k: v for k, v in rate_limit_store.items() if v[1] > cutoff}
-            )
-
-            return f(*args, **kwargs)
-
-        return decorated_function
-
-    return decorator
+def validate_password_strength(password):
+    """Validate password strength and return result."""
+    errors = []
+    if len(password) < 8:
+        errors.append("Password must be at least 8 characters")
+    if not re.search(r"[A-Z]", password):
+        errors.append("Password must contain at least one uppercase letter")
+    if not re.search(r"[a-z]", password):
+        errors.append("Password must contain at least one lowercase letter")
+    if not re.search(r"\d", password):
+        errors.append("Password must contain at least one number")
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        errors.append("Password must contain at least one special character")
+    return {"is_valid": len(errors) == 0, "errors": errors}
 
 
 def generate_token(user_id, token_type="auth", expires_days=7):
-    """Generate JWT token with configurable expiration"""
+    """Generate a JWT token."""
+    from datetime import datetime, timedelta
+
     payload = {
         "user_id": user_id,
         "type": token_type,
-        "exp": datetime.now(timezone.utc) + timedelta(days=expires_days),
-        "iat": datetime.now(timezone.utc),
+        "exp": datetime.utcnow() + timedelta(days=expires_days),
     }
     return jwt.encode(payload, current_app.config["SECRET_KEY"], algorithm="HS256")
 
 
 def verify_token(token, token_type="auth"):
-    """Verify and decode JWT token"""
+    """Verify and decode a JWT token."""
     try:
         payload = jwt.decode(
             token, current_app.config["SECRET_KEY"], algorithms=["HS256"]
         )
-        if payload.get("type") != token_type:
+        if token_type and payload.get("type") != token_type:
             return None
         return payload
     except jwt.ExpiredSignatureError:
@@ -114,29 +87,13 @@ def verify_token(token, token_type="auth"):
         return None
 
 
-def validate_password_strength(password):
-    """Validate password strength with detailed feedback"""
-    errors = []
-
-    if len(password) < 8:
-        errors.append("Password must be at least 8 characters long")
-    if not re.search(r"[A-Z]", password):
-        errors.append("Password must contain at least one uppercase letter")
-    if not re.search(r"[a-z]", password):
-        errors.append("Password must contain at least one lowercase letter")
-    if not re.search(r"[0-9]", password):
-        errors.append("Password must contain at least one number")
-    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
-        errors.append("Password must contain at least one special character")
-
-    return {"is_valid": len(errors) == 0, "errors": errors}
+def send_email(to_email, subject, body):
+    """Send email (mock for testing)."""
+    return True
 
 
-def allowed_file(filename):
-    allowed = current_app.config.get(
-        "ALLOWED_EXTENSIONS", {"png", "jpg", "jpeg", "gif", "webp"}
-    )
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in allowed
+def get_user_by_public_id(public_id):
+    return User.query.filter_by(public_id=public_id).first()
 
 
 def get_user_from_token():
@@ -156,583 +113,606 @@ def get_user_from_token():
         return None
 
 
+# --- Routes ---
+
+
 @bp.route("/")
+@limiter.limit("1000 per day")  # Example limit for homepage
 def index():
-    return jsonify(message="Welcome to DriftDater API", version="1.0")
+    if current_user.is_authenticated:
+        # Assuming 'browse' route is registered under the 'views' blueprint
+        return redirect(url_for("views.browse"))
+    # Assuming 'login' route is registered under the 'auth' blueprint (which is named 'auth')
+    return redirect(url_for("auth.login"))
 
 
-@bp.route("/api/auth/register", methods=["POST"])
-@rate_limit(max_requests=5, window_seconds=3600)  # 5 registrations per hour
+@bp.route("/register", methods=["GET", "POST"])
+@limiter.limit("5/minute")
 def register():
-    data = request.get_json()
-
-    # Validate password strength
-    if "password" in data:
-        password_check = validate_password_strength(data["password"])
-        if not password_check["is_valid"]:
-            return jsonify({"errors": {"password": password_check["errors"]}}), 400
-
-    form = RegistrationForm(data=data)
-    if not form.validate():
-        return jsonify({"errors": form.errors}), 400
-
-    if User.query.filter_by(email=form.email.data).first():
-        return jsonify({"errors": {"email": ["This email is already registered"]}}), 400
-
-    password_hash = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
-
-    user = User(email=form.email.data, password_hash=password_hash)
-    db.session.add(user)
-    db.session.flush()
-
-    verify_url = (
-        f"{current_app.config['FRONTEND_URL']}/verify/{user.verification_token}"
-    )
-
-    email_body = f"""
-    <html>
-    <body>
-        <h2>Welcome to DriftDater!</h2>
-        <p>Thank you for registering. Please verify your email by clicking the link below:</p>
-        <p><a href="{verify_url}" style="display: inline-block; padding: 12px 24px; background-color: #10b981; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">Verify Email</a></p>
-        <p>Or copy and paste this link into your browser:</p>
-        <p style="word-break: break-all; color: #6b7280;">{verify_url}</p>
-        <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;">
-        <p style="color: #9ca3af; font-size: 14px;">This link will expire in 24 hours.</p>
-    </body>
-    </html>
-    """
-
-    if not send_email(user.email, "Verify your DriftDater account", email_body):
-        db.session.rollback()
-        return (
-            jsonify(
-                {
-                    "error": "Registration email could not be sent. Please check email delivery configuration and try again."
-                }
-            ),
-            503,
-        )
-
-    db.session.commit()
-
-    return (
-        jsonify(
-            {
-                "message": "Registration successful. Please check your email to verify your account.",
-                "user_id": user.user_id,
-            }
-        ),
-        201,
-    )
-
-
-@bp.route("/api/auth/verify/<token>", methods=["GET"])
-@rate_limit(max_requests=10, window_seconds=3600)
-def verify_email(token):
-    user = User.query.filter_by(verification_token=token).first()
-
-    if not user:
-        return jsonify({"error": "Invalid verification token"}), 404
-
-    if user.is_verified:
-        return jsonify({"message": "Email already verified"}), 200
-
-    # Check token expiration (24 hours)
-    # Note: In production, store token expiry in the database
-    user.is_verified = True
-    user.verification_token = None
-    db.session.commit()
-
-    return jsonify({"message": "Email verified successfully. You can now log in."}), 200
-
-
-@bp.route("/api/auth/login", methods=["POST"])
-@rate_limit(max_requests=10, window_seconds=300)  # 10 login attempts per 5 minutes
-def login():
-    data = request.get_json()
-
-    form = LoginForm(data=data)
-    if not form.validate():
-        return jsonify({"errors": form.errors}), 400
-
-    user = User.query.filter_by(email=form.email.data).first()
-
-    if not user or not bcrypt.check_password_hash(
-        user.password_hash, form.password.data
-    ):
-        # Log failed login attempt (for security monitoring)
-        print(f"[SECURITY] Failed login attempt for email: {form.email.data}")
-        return jsonify({"errors": {"general": ["Invalid email or password"]}}), 401
-
-    if not user.is_verified:
-        return (
-            jsonify(
-                {
-                    "errors": {
-                        "general": [
-                            "Please verify your email before logging in. Check your inbox."
-                        ]
-                    }
-                }
-            ),
-            401,
-        )
-
-    token = generate_token(user.user_id)
-
-    return (
-        jsonify(
-            {
-                "message": "Login successful",
-                "token": token,
-                "user": {
-                    "id": user.user_id,
-                    "email": user.email,
-                    "is_verified": user.is_verified,
-                    "has_profile": user.profile is not None,
-                },
-            }
-        ),
-        200,
-    )
-
-
-@bp.route("/api/auth/logout", methods=["POST"])
-def logout():
-    # In production, add token to blacklist
-    # For now, just return success
-    return jsonify({"message": "Logged out successfully"}), 200
-
-
-@bp.route("/api/auth/resend-verification", methods=["POST"])
-@rate_limit(max_requests=3, window_seconds=3600)  # 3 requests per hour
-def resend_verification():
-    data = request.get_json()
-
-    if not data or "email" not in data:
-        return jsonify({"error": "Email is required"}), 400
-
-    email = data["email"].strip().lower()
-
-    # Validate email format
-    if not re.match(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", email):
-        return jsonify({"error": "Invalid email format"}), 400
-
-    user = User.query.filter_by(email=email).first()
-
-    if not user:
-        # Don't reveal if email exists or not (security best practice)
-        return (
-            jsonify(
-                {
-                    "message": "If an account exists with this email, a verification link has been sent."
-                }
-            ),
-            200,
-        )
-
-    if user.is_verified:
-        return jsonify({"error": "Email is already verified"}), 400
-
-    # Generate new verification token
-    import secrets
-
-    user.verification_token = secrets.token_urlsafe(32)
-    db.session.flush()
-
-    verify_url = (
-        f"{current_app.config['FRONTEND_URL']}/verify/{user.verification_token}"
-    )
-
-    email_body = f"""
-    <html>
-    <body>
-        <h2>Verify Your DriftDater Account</h2>
-        <p>You requested to resend the verification email. Click the link below to verify your account:</p>
-        <p><a href="{verify_url}" style="display: inline-block; padding: 12px 24px; background-color: #10b981; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">Verify Email</a></p>
-        <p>Or copy and paste this link into your browser:</p>
-        <p style="word-break: break-all; color: #6b7280;">{verify_url}</p>
-        <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;">
-        <p style="color: #9ca3af; font-size: 14px;">This link will expire in 24 hours.</p>
-        <p style="color: #9ca3af; font-size: 14px;">If you didn't request this, you can safely ignore this email.</p>
-    </body>
-    </html>
-    """
-
-    if not send_email(user.email, "Resend: Verify your DriftDater account", email_body):
-        db.session.rollback()
-        return (
-            jsonify(
-                {
-                    "error": "Verification email could not be sent. Please check email delivery configuration and try again."
-                }
-            ),
-            503,
-        )
-
-    db.session.commit()
-
-    return (
-        jsonify({"message": "Verification email sent. Please check your inbox."}),
-        200,
-    )
-
-
-@bp.route("/api/auth/forgot-password", methods=["POST"])
-@rate_limit(max_requests=5, window_seconds=3600)
-def forgot_password():
-    data = request.get_json()
-
-    if not data or "email" not in data:
-        return jsonify({"error": "Email is required"}), 400
-
-    email = data["email"].strip().lower()
-
-    # Validate email format
-    if not re.match(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", email):
-        return jsonify({"error": "Invalid email format"}), 400
-
-    user = User.query.filter_by(email=email).first()
-
-    # Don't reveal if email exists (security best practice)
-    if not user:
-        return (
-            jsonify(
-                {
-                    "message": "If an account exists with this email, a password reset link has been sent."
-                }
-            ),
-            200,
-        )
-
-    # Generate password reset token
-    import secrets
-
-    secrets.token_urlsafe(32)
-
-    # Store token hash in database (in production, create a PasswordResetToken model)
-    # For now, we'll encode it in JWT
-    reset_jwt = generate_token(user.user_id, token_type="reset", expires_days=1)
-
-    reset_url = f"{current_app.config['FRONTEND_URL']}/reset-password?token={reset_jwt}"
-
-    email_body = f"""
-    <html>
-    <body>
-        <h2>Password Reset Request</h2>
-        <p>You requested to reset your password. Click the link below to create a new password:</p>
-        <p><a href="{reset_url}" style="display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">Reset Password</a></p>
-        <p>Or copy and paste this link into your browser:</p>
-        <p style="word-break: break-all; color: #6b7280;">{reset_url}</p>
-        <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;">
-        <p style="color: #9ca3af; font-size: 14px;">This link will expire in 1 hour.</p>
-        <p style="color: #9ca3af; font-size: 14px;">If you didn't request this, you can safely ignore this email and your password will remain unchanged.</p>
-    </body>
-    </html>
-    """
-
-    if not send_email(user.email, "Password Reset Request", email_body):
-        return jsonify({"error": "Password reset email could not be sent."}), 503
-
-    return (
-        jsonify(
-            {
-                "message": "If an account exists with this email, a password reset link has been sent."
-            }
-        ),
-        200,
-    )
-
-
-@bp.route("/api/auth/reset-password", methods=["POST"])
-@rate_limit(max_requests=5, window_seconds=3600)
-def reset_password():
-    data = request.get_json()
-
-    if not data:
-        return jsonify({"error": "Request data is required"}), 400
-
-    token = data.get("token")
-    password = data.get("password")
-    confirm_password = data.get("confirm_password")
-
-    if not token:
-        return jsonify({"error": "Reset token is required"}), 400
-
-    if not password or not confirm_password:
-        return jsonify({"error": "Password and confirm password are required"}), 400
-
-    if password != confirm_password:
-        return (
-            jsonify({"errors": {"confirm_password": ["Passwords do not match"]}}),
-            400,
-        )
-
-    # Validate password strength
-    password_check = validate_password_strength(password)
-    if not password_check["is_valid"]:
-        return jsonify({"errors": {"password": password_check["errors"]}}), 400
-
-    # Verify reset token
-    payload = verify_token(token, token_type="reset")
-    if not payload:
-        return jsonify({"error": "Invalid or expired reset token"}), 400
-
-    user = db.session.get(User, payload["user_id"])
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-
-    # Update password
-    user.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
-    db.session.commit()
-
-    return (
-        jsonify(
-            {
-                "message": "Password reset successfully. You can now log in with your new password."
-            }
-        ),
-        200,
-    )
-
-
-@bp.route("/api/auth/refresh", methods=["POST"])
-@rate_limit(max_requests=10, window_seconds=60)
-def refresh_token():
-    """Refresh authentication token"""
-    data = request.get_json()
-
-    if not data or "user_id" not in data:
-        return jsonify({"error": "User ID is required"}), 400
-
-    user = db.session.get(User, data["user_id"])
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-
-    if not user.is_verified:
-        return jsonify({"error": "Email not verified"}), 401
-
-    # Generate new token
-    new_token = generate_token(user.user_id)
-
-    return (
-        jsonify(
-            {
-                "token": new_token,
-                "user": {
-                    "id": user.user_id,
-                    "email": user.email,
-                    "is_verified": user.is_verified,
-                    "has_profile": user.profile is not None,
-                },
-            }
-        ),
-        200,
-    )
-
-
-@bp.route("/api/auth/me", methods=["GET"])
-def get_current_user():
-    user = get_user_from_token()
-    if not user:
-        return jsonify({"error": "Authentication required"}), 401
-
-    profile_name = None
-    profile_picture = None
-    if user.profile:
-        profile_name = user.profile.name
-        profile_picture = user.profile.profile_picture
-
-    return (
-        jsonify(
-            {
-                "id": user.user_id,
-                "email": user.email,
-                "is_verified": user.is_verified,
-                "has_profile": user.profile is not None,
-                "name": profile_name,
-                "profile_picture": profile_picture,
-            }
-        ),
-        200,
-    )
-
-
-@bp.route("/api/profile", methods=["GET"])
-def get_profile():
-    user = get_user_from_token()
-    if not user:
-        return jsonify({"error": "Authentication required"}), 401
-
-    profile = Profile.query.filter_by(user_id=user.user_id).first()
-
-    if not profile:
-        return jsonify({"error": "Profile not found"}), 404
-
-    return jsonify(profile.to_dict()), 200
-
-
-@bp.route("/api/profile", methods=["POST"])
-def create_profile():
-    user = get_user_from_token()
-    if not user:
-        return jsonify({"error": "Authentication required"}), 401
-
-    existing = Profile.query.filter_by(user_id=user.user_id).first()
-    if existing:
-        return jsonify({"error": "Profile already exists. Use PUT to update."}), 400
-
-    data = request.get_json() or {}
-    data["interests"] = data.get("interests", [])
-
-    form = ProfileForm(data=data)
-    if not form.validate():
-        return jsonify({"errors": form.errors}), 400
-
-    interests_list = [i.strip() for i in form.interests.data.split(",") if i.strip()]
-    if len(interests_list) < 3:
-        return (
-            jsonify({"errors": {"interests": ["Please add at least 3 interests"]}}),
-            400,
-        )
-
-    profile = Profile(
-        user_id=user.user_id,
-        name=form.name.data,
-        age=form.age.data,
-        bio=form.bio.data,
-        interests=interests_list,
-        gender=form.gender.data,
-        gender_preference=form.gender_preference.data,
-        relationship_goal=form.relationship_goal.data,
-        occupation=form.occupation.data,
-        visibility=form.visibility.data,
-    )
-
-    db.session.add(profile)
-    db.session.commit()
-
-    return jsonify(profile.to_dict()), 201
-
-
-@bp.route("/api/profile", methods=["PUT"])
-def update_profile():
-    user = get_user_from_token()
-    if not user:
-        return jsonify({"error": "Authentication required"}), 401
-
-    profile = Profile.query.filter_by(user_id=user.user_id).first()
-
-    if not profile:
-        return jsonify({"error": "Profile not found. Create one first."}), 404
-
-    data = request.get_json() or {}
-    data["interests"] = data.get("interests", [])
-
-    # Handle partial updates - only validate provided fields
-
-    if "name" in data and data["name"]:
-        profile.name = data["name"]
-    if "age" in data:
-        profile.age = data["age"]
-    if "bio" in data:
-        profile.bio = data["bio"]
-    if "interests" in data:
-        interests_list = [
-            i.strip()
-            for i in data["interests"]
-            if isinstance(data["interests"], list)
-            or (isinstance(data["interests"], str) and i.strip())
-        ]
-        if data["interests"] and isinstance(data["interests"], str):
-            interests_list = [
-                i.strip() for i in data["interests"].split(",") if i.strip()
+    if current_user.is_authenticated:
+        return redirect(url_for("views.browse"))
+
+    if request.method == "POST":
+        username = request.form.get("username")
+        email = request.form.get("email")
+        password = request.form.get("password")
+        password2 = request.form.get("password2")
+        first_name = request.form.get("first_name")
+        last_name = request.form.get("last_name")
+        age_str = request.form.get("age")
+        gender = request.form.get("gender")
+        interested_in = request.form.get("interested_in")
+
+        if not all(
+            [
+                username,
+                email,
+                password,
+                password2,
+                first_name,
+                age_str,
+                gender,
+                interested_in,
             ]
-        if len(interests_list) < 3 and interests_list:
-            return (
-                jsonify({"errors": {"interests": ["Please add at least 3 interests"]}}),
-                400,
+        ):
+            flash("All fields are required. Please fill in all the details.", "danger")
+            return redirect(url_for("views.register"))  # Use blueprint name
+
+        if User.query.filter_by(username=username).first():
+            flash("Username already exists. Please choose a different one.", "danger")
+            return redirect(url_for("views.register"))  # Use blueprint name
+        if User.query.filter_by(email=email).first():
+            flash(
+                "Email address already registered. Please log in or use a different email.",
+                "danger",
             )
-        if interests_list:
-            profile.interests = interests_list
-    if "gender" in data and data["gender"]:
-        profile.gender = data["gender"]
-    if "gender_preference" in data and data["gender_preference"]:
-        profile.gender_preference = data["gender_preference"]
-    if "relationship_goal" in data and data["relationship_goal"]:
-        profile.relationship_goal = data["relationship_goal"]
-    if "occupation" in data:
-        profile.occupation = data["occupation"] if data["occupation"] else None
-    if "visibility" in data:
-        profile.visibility = data["visibility"]
+            return redirect(url_for("views.register"))  # Use blueprint name
 
-    db.session.commit()
-
-    return jsonify(profile.to_dict()), 200
-
-
-@bp.route("/api/profile/picture", methods=["POST"])
-def upload_picture():
-    user = get_user_from_token()
-    if not user:
-        return jsonify({"error": "Authentication required"}), 401
-
-    profile = Profile.query.filter_by(user_id=user.user_id).first()
-
-    if not profile:
-        return jsonify({"error": "Create a profile first"}), 400
-
-    if "file" not in request.files:
-        return jsonify({"error": "No file provided"}), 400
-
-    file = request.files["file"]
-
-    if file.filename == "":
-        return jsonify({"error": "No file selected"}), 400
-
-    if file and allowed_file(file.filename):
-        filename = secure_filename(f"user_{user.user_id}_{file.filename}")
-        upload_folder = current_app.config.get("UPLOAD_FOLDER", "./uploads")
-        if not os.path.isabs(upload_folder):
-            upload_folder = os.path.join(
-                os.path.dirname(os.path.dirname(__file__)), upload_folder
+        if password != password2:
+            flash(
+                "Passwords do not match. Please ensure passwords are the same.",
+                "danger",
             )
-        os.makedirs(upload_folder, exist_ok=True)
-        filepath = os.path.join(upload_folder, filename)
-        file.save(filepath)
+            return redirect(url_for("views.register"))  # Use blueprint name
 
-        profile.profile_picture = filename
+        try:
+            age = int(age_str)
+            if age < 18:
+                flash(
+                    "You must be at least 18 years old to use this service.", "danger"
+                )
+                return redirect(url_for("views.register"))  # Use blueprint name
+        except ValueError:
+            flash("Invalid age entered. Please enter a valid number.", "danger")
+            return redirect(url_for("views.register"))  # Use blueprint name
+
+        new_user = User(
+            username=username,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            age=age,
+            gender=gender,
+            interested_in=interested_in,
+            profile_picture="default_avatar.png",  # Default profile picture
+        )
+        new_user.set_password(password)
+
+        db.session.add(new_user)
         db.session.commit()
 
-        return (
-            jsonify({"message": "Profile picture uploaded", "filename": filename}),
-            200,
+        flash("Your account has been created! Please log in.", "success")
+        return redirect(url_for("auth.login"))  # Redirect to auth blueprint login
+
+    return render_template("register.html")
+
+
+@bp.route("/login", methods=["GET", "POST"])
+@limiter.limit("100/hour")
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("views.browse"))
+
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+        remember = request.form.get("remember")  # 'on' or None
+
+        user = User.query.filter_by(email=email).first()
+
+        if user and user.check_password(password):
+            login_user(user, remember=True if remember else False)
+            user.last_login = datetime.utcnow()  # Assuming last_login attribute exists
+            db.session.commit()
+
+            flash("Login successful!", "success")
+            next_page = request.args.get("next")
+            # Use blueprint name for browse route
+            return redirect(next_page or url_for("views.browse"))
+        else:
+            flash("Login failed. Please check your email and password.", "danger")
+
+    return render_template("login.html")
+
+
+@bp.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("You have been logged out.", "info")
+    return redirect(url_for("auth.login"))  # Redirect to auth blueprint login
+
+
+@bp.route("/profile")
+@login_required
+def profile():
+    user_data = {
+        "id": current_user.public_id,  # Assuming public_id exists
+        "username": current_user.username,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "age": current_user.age,
+        "gender": current_user.gender,
+        "interested_in": current_user.interested_in,
+        "bio": current_user.bio,
+        "profile_picture": url_for(
+            "static", filename=f"profile_pics/{current_user.profile_picture}"
+        ),
+        "is_verified": current_user.is_verified,
+        "email": current_user.email,
+    }
+    return render_template("profile.html", user=user_data)
+
+
+@bp.route("/profile/edit", methods=["GET", "POST"])
+@login_required
+def edit_profile():
+    user = User.query.get(current_user.id)
+    if request.method == "POST":
+        user.username = request.form.get("username")
+        user.first_name = request.form.get("first_name")
+        user.last_name = request.form.get("last_name")
+        try:
+            user.age = int(request.form.get("age"))
+        except ValueError:
+            flash("Invalid age. Please enter a number.", "danger")
+            return redirect(url_for("views.edit_profile"))  # Use blueprint name
+
+        user.gender = request.form.get("gender")
+        user.interested_in = request.form.get("interested_in")
+        user.bio = request.form.get("bio")
+
+        if "profile_picture" in request.files:
+            file = request.files["profile_picture"]
+            if file and allowed_file(file.filename):
+                ext = file.filename.rsplit(".", 1)[1].lower()
+                unique_filename = f"{uuid.uuid4()}.{ext}"
+                filename = secure_filename(unique_filename)
+                filepath = os.path.join(
+                    current_app.config["PROFILE_PICS_FOLDER"], filename
+                )
+                file.save(filepath)
+                if user.profile_picture != "default_avatar.png":
+                    try:
+                        os.remove(
+                            os.path.join(
+                                current_app.config["PROFILE_PICS_FOLDER"],
+                                user.profile_picture,
+                            )
+                        )
+                    except OSError as e:
+                        print(f"Error removing old profile picture: {e}")
+                user.profile_picture = filename
+            elif file.filename != "":
+                flash(
+                    "Invalid file type for profile picture. Allowed types are png, jpg, jpeg, gif.",
+                    "danger",
+                )
+
+        db.session.commit()
+        flash("Profile updated successfully!", "success")
+        return redirect(url_for("views.profile"))  # Use blueprint name
+
+    return render_template("edit_profile.html", user=user)
+
+
+@bp.route("/browse")
+@login_required
+@limiter.limit("60/hour")
+def browse():
+    current_user_id = current_user.id
+    current_user_interest = current_user.interested_in
+
+    target_genders = []
+    if current_user_interest == "Male":
+        target_genders.append("Male")
+    elif current_user_interest == "Female":
+        target_genders.append("Female")
+    elif current_user_interest == "Everyone":
+        target_genders.extend(["Male", "Female", "Other"])
+
+    # Simplified query: exclude self, require verified, match interest, and not already liked/matched
+    potential_matches = (
+        User.query.filter(
+            User.id != current_user_id,
+            User.is_verified,
+            User.gender.in_(target_genders) if target_genders else True,
+            ~User.likes_received.any(
+                Like.liker_id == current_user_id
+            ),  # User has not received a like from this potential match
+            ~User.likes_given.any(
+                Like.liked_id == current_user_id
+            ),  # User has not liked this potential match
+            ~User.matches_initiated.any(
+                Match.user2_id == current_user_id
+            ),  # User has not initiated a match with this potential match
+            ~User.matches_received.any(
+                Match.user1_id == current_user_id
+            ),  # User has not received a match from this potential match
+        )
+        .order_by(User.id)
+        .limit(20)
+        .all()
+    )
+
+    for user in potential_matches:
+        user.profile_picture_url = url_for(
+            "static", filename=f"profile_pics/{user.profile_picture}"
         )
 
-    return jsonify({"error": "Invalid file type"}), 400
+    return render_template("browse.html", users=potential_matches)
 
 
-@bp.route("/api/profile/<int:user_id>", methods=["GET"])
-def view_other_profile(user_id):
-    profile = db.session.get(Profile, user_id)
+@bp.route("/like", methods=["POST"])
+@login_required
+@limiter.limit("100/hour")
+def like_user():
+    data = request.get_json()
+    liked_user_public_id = data.get("user_id")
 
-    if not profile:
-        return jsonify({"error": "Profile not found"}), 404
+    if not liked_user_public_id:
+        return jsonify({"error": "User ID is required"}), 400
 
-    if not profile.visibility:
-        user = get_user_from_token()
-        if not user or user.user_id != user_id:
-            return jsonify({"error": "This profile is private"}), 403
+    current_user_id = current_user.id
 
-    return jsonify(profile.to_dict()), 200
+    user_to_like = User.query.filter_by(public_id=liked_user_public_id).first()
+    if not user_to_like:
+        return jsonify({"error": "User not found"}), 404
+
+    liked_user_id_int = user_to_like.id
+
+    if liked_user_id_int == current_user_id:
+        return jsonify({"error": "Cannot like yourself"}), 400
+
+    existing_like = Like.query.filter_by(
+        liker_id=current_user_id, liked_id=liked_user_id_int
+    ).first()
+    if existing_like:
+        return jsonify({"message": "You have already liked this user"}), 200
+
+    new_like = Like(liker_id=current_user_id, liked_id=liked_user_id_int)
+    db.session.add(new_like)
+
+    mutual_like = Like.query.filter_by(
+        liker_id=liked_user_id_int, liked_id=current_user_id
+    ).first()
+
+    if mutual_like:
+        user1_id = min(current_user_id, liked_user_id_int)
+        user2_id = max(current_user_id, liked_user_id_int)
+        new_match = Match(user1_id=user1_id, user2_id=user2_id)
+        db.session.add(new_match)
+
+        liker_user = User.query.get(current_user_id)
+        liked_user = User.query.get(liked_user_id_int)
+
+        notification_liker = Notification(
+            user_id=liked_user_id_int,
+            type="match",
+            related_user_id=current_user_id,
+            content=f"It's a match with {liker_user.username}!",
+        )
+        db.session.add(notification_liker)
+
+        notification_liked = Notification(
+            user_id=current_user_id,
+            type="match",
+            related_user_id=liked_user_id_int,
+            content=f"It's a match with {liked_user.username}!",
+        )
+        db.session.add(notification_liked)
+
+        # Use socketio.emit
+        socketio.emit(
+            "new_match",
+            {
+                "user_id": liked_user_id_int,
+                "matched_with": {
+                    "id": liker_user.public_id,
+                    "username": liker_user.username,
+                    "profile_picture": liker_user.profile_picture,
+                    "timestamp": new_match.timestamp.isoformat(),
+                },
+            },
+            room=str(liked_user.public_id),
+        )
+
+        socketio.emit(
+            "new_match",
+            {
+                "user_id": current_user_id,
+                "matched_with": {
+                    "id": liked_user.public_id,
+                    "username": liked_user.username,
+                    "profile_picture": liked_user.profile_picture,
+                    "timestamp": new_match.timestamp.isoformat(),
+                },
+            },
+            room=str(liker_user.public_id),
+        )
+
+    else:
+        liker_user = User.query.get(current_user_id)
+        liked_user = User.query.get(liked_user_id_int)
+        notification = Notification(
+            user_id=liked_user_id_int,
+            type="like",
+            related_user_id=current_user_id,
+            content=f"{liker_user.username} liked you!",
+        )
+        db.session.add(notification)
+
+        socketio.emit(
+            "new_like",
+            {
+                "user_id": liked_user_id_int,
+                "liked_by": {
+                    "id": liker_user.public_id,
+                    "username": liker_user.username,
+                    "profile_picture": liker_user.profile_picture,
+                    "timestamp": new_like.timestamp.isoformat(),
+                },
+            },
+            room=str(liked_user.public_id),
+        )
+
+    try:
+        db.session.commit()
+        return (
+            jsonify({"message": "Action successful", "is_match": bool(mutual_like)}),
+            200,
+        )
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 
-@bp.after_request
-def add_header(response):
-    response.headers["X-UA-Compatible"] = "IE=Edge,chrome=1"
-    response.headers["Cache-Control"] = "public, max-age=0"
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "SAMEORIGIN"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
-    return response
+@bp.route("/unlike", methods=["POST"])
+@login_required
+@limiter.limit("100/hour")
+def unlike_user():
+    data = request.get_json()
+    unliked_user_public_id = data.get("user_id")
+
+    if not unliked_user_public_id:
+        return jsonify({"error": "User ID is required"}), 400
+
+    current_user_id = current_user.id
+    user_to_unlike = User.query.filter_by(public_id=unliked_user_public_id).first()
+    if not user_to_unlike:
+        return jsonify({"error": "User not found"}), 404
+
+    liked_user_id_int = user_to_unlike.id  # Use the actual ID of the user to unlike
+
+    like = Like.query.filter_by(
+        liker_id=current_user_id, liked_id=liked_user_id_int
+    ).first()
+    if like:
+        db.session.delete(like)
+
+    db.session.commit()
+    return jsonify({"message": "User unliked successfully"}), 200
+
+
+@bp.route("/matches")
+@login_required
+def matches():
+    current_user_id = current_user.id
+    user_matches = (
+        Match.query.filter(
+            ((Match.user1_id == current_user_id) | (Match.user2_id == current_user_id))
+            & ~(Match.user1_deleted & Match.user2_deleted)
+        )
+        .order_by(Match.timestamp.desc())
+        .all()
+    )
+
+    matches_list = []
+    for match in user_matches:
+        other_user_id = (
+            match.user2_id if match.user1_id == current_user_id else match.user1_id
+        )
+        other_user = User.query.get(other_user_id)
+
+        if other_user:
+            user_deleted_match = (
+                match.user1_id == current_user_id and match.user1_deleted
+            ) or (match.user2_id == current_user_id and match.user2_deleted)
+
+            if not user_deleted_match:
+                matches_list.append(
+                    {
+                        "id": match.id,
+                        "user_id": other_user.public_id,
+                        "username": other_user.username,
+                        "profile_picture": url_for(
+                            "static",
+                            filename=f"profile_pics/{other_user.profile_picture}",
+                        ),
+                        "last_message_preview": "Start chatting...",
+                        "timestamp": match.timestamp.isoformat(),
+                        "user_deleted": user_deleted_match,
+                    }
+                )
+
+    return render_template("matches.html", matches=matches_list)
+
+
+@bp.route("/messages/<match_id>")
+@login_required
+def messages(match_id):
+    current_user_id = current_user.id
+    try:
+        match_id_int = int(match_id)
+    except ValueError:
+        flash("Invalid match ID", "danger")
+        return redirect(url_for("views.matches"))  # Use blueprint name
+
+    match = Match.query.get(match_id_int)
+    if not match:
+        flash("Match not found.", "danger")
+        return redirect(url_for("views.matches"))  # Use blueprint name
+
+    if match.user1_id == current_user_id:
+        other_user_id = match.user2_id
+        if match.user1_deleted:
+            flash("This conversation has been ended by the other user.", "info")
+            return redirect(url_for("views.matches"))  # Use blueprint name
+    elif match.user2_id == current_user_id:
+        other_user_id = match.user1_id
+        if match.user2_deleted:
+            flash("This conversation has been ended by the other user.", "info")
+            return redirect(url_for("views.matches"))  # Use blueprint name
+    else:
+        flash("You do not have access to this conversation.", "danger")
+        return redirect(url_for("views.matches"))  # Use blueprint name
+
+    other_user = User.query.get(other_user_id)
+    if not other_user:
+        flash("User not found.", "danger")
+        return redirect(url_for("views.matches"))  # Use blueprint name
+
+    messages = (
+        Message.query.filter(
+            (
+                (Message.sender_id == current_user_id)
+                & (Message.receiver_id == other_user_id)
+            )
+            | (
+                (Message.sender_id == other_user_id)
+                & (Message.receiver_id == current_user_id)
+            )
+        )
+        .order_by(Message.timestamp)
+        .all()
+    )
+
+    for msg in messages:
+        if msg.receiver_id == current_user_id and not msg.read:
+            msg.read = True
+    db.session.commit()
+
+    message_list = []
+    for msg in messages:
+        message_list.append(
+            {
+                "id": msg.id,
+                "sender_id": msg.sender.public_id,  # Assuming public_id exists
+                "username": msg.sender.username,
+                "content": msg.content,
+                "timestamp": msg.timestamp.isoformat(),
+                "read": msg.read,
+                "is_current_user": msg.sender_id == current_user_id,
+            }
+        )
+
+    return render_template(
+        "messages.html", messages=message_list, other_user=other_user, match_id=match_id
+    )
+
+
+@bp.route("/send_message/<match_id>", methods=["POST"])
+@login_required
+@limiter.limit("100/hour")
+def send_message(match_id):
+    data = request.get_json()
+    content = data.get("content")
+
+    if not content:
+        return jsonify({"error": "Message content cannot be empty"}), 400
+
+    current_user_id = current_user.id
+    try:
+        match_id_int = int(match_id)
+    except ValueError:
+        return jsonify({"error": "Invalid match ID"}), 400
+
+    match = Match.query.get(match_id_int)
+    if not match:
+        return jsonify({"error": "Match not found"}), 404
+
+    if match.user1_id == current_user_id:
+        other_user_id = match.user2_id
+        if match.user1_deleted:
+            return jsonify({"error": "Cannot send message, chat has been ended"}), 400
+    elif match.user2_id == current_user_id:
+        other_user_id = match.user1_id
+        if match.user2_deleted:
+            return jsonify({"error": "Cannot send message, chat has been ended"}), 400
+    else:
+        return jsonify({"error": "You are not part of this match"}), 403
+
+    other_user = User.query.get(other_user_id)
+    if not other_user:
+        return jsonify({"error": "Other user not found"}), 404
+
+    new_message = Message(
+        sender_id=current_user_id, receiver_id=other_user_id, content=content
+    )
+    db.session.add(new_message)
+
+    notification = Notification(
+        user_id=other_user_id,
+        type="message",
+        related_user_id=current_user_id,
+        content=f"{current_user.username}: {content[:50]}{'...' if len(content)>50 else ''}",
+    )
+    db.session.add(notification)
+
+    try:
+        db.session.commit()
+        message_data = {
+            "id": new_message.id,
+            "sender_id": current_user.public_id,  # Assuming public_id exists
+            "username": current_user.username,
+            "content": new_message.content,
+            "timestamp": new_message.timestamp.isoformat(),
+            "read": new_message.read,
+            "is_current_user": True,
+        }
+        socketio.emit("new_message", message_data, room=str(other_user.public_id))
+        socketio.emit(
+            "notification",
+            {
+                "user_id": other_user_id,
+                "type": "message",
+                "related_user_id": current_user.public_id,
+                "content": notification.content,
+            },
+            room=str(other_user.public_id),
+        )
+
+        return (
+            jsonify(
+                {"message": "Message sent successfully", "message_data": message_data}
+            ),
+            200,
+        )
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+
+# --- Flask-Migrate commands ---
+# Note: These are typically run via the Flask CLI, not directly in app.py
+# Example: flask db init, flask db migrate, flask db upgrade

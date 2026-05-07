@@ -20,7 +20,8 @@ import AppHeader from "@/components/AppHeader.vue";
     - Route transitions for smooth page navigation
   -->
   <div
-    class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300"
+    class="min-h-screen transition-colors duration-300"
+    style="background-color: var(--color-bg); color: var(--color-text)"
   >
     <AppHeader />
     <main class="pt-16">

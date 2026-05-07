@@ -379,7 +379,7 @@ const toggleBookmark = async (profile) => {
 .search-header h1 {
   font-size: 2rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #14b8a6, #8b5cf6);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -387,26 +387,21 @@ const toggleBookmark = async (profile) => {
 }
 
 .search-header p {
-  color: #6b7280;
-}
-
-:global(.dark) .search-header p {
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .search-form {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(20, 184, 166, 0.15);
+  background: var(--bg);
+  border: 1px solid var(--border);
   padding: 1.5rem;
   border-radius: 1rem;
   margin-bottom: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-md);
 }
 
-:global(.dark) .search-form {
-  background: rgba(31, 41, 55, 0.7);
-  border-color: rgba(139, 92, 246, 0.2);
+[data-theme="dark"] .search-form {
+  background: var(--surface);
+  border-color: var(--border);
 }
 
 .form-grid {
@@ -435,43 +430,39 @@ const toggleBookmark = async (profile) => {
   gap: 0.4rem;
   font-weight: 600;
   font-size: 0.85rem;
-  color: #374151;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
-}
-
-:global(.dark) .form-group label {
-  color: #d1d5db;
 }
 
 .label-icon {
   width: 16px;
   height: 16px;
-  color: #14b8a6;
+  color: var(--primary);
 }
 
 .form-input,
 .form-select {
   padding: 0.7rem 0.9rem;
-  border: 1px solid rgba(20, 184, 166, 0.25);
+  border: 1px solid var(--border);
   border-radius: 0.6rem;
   font-size: 0.9rem;
-  background: rgba(255, 255, 255, 0.8);
-  color: #1f2937;
+  background: var(--bg);
+  color: var(--text-primary);
   transition: all 0.2s;
 }
 
-:global(.dark) .form-input,
-:global(.dark) .form-select {
-  background: rgba(55, 65, 81, 0.8);
-  border-color: rgba(139, 92, 246, 0.3);
-  color: #f3f4f6;
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .form-select {
+  background: var(--input-bg);
+  border-color: var(--border);
+  color: var(--text-primary);
 }
 
 .form-input:focus,
 .form-select:focus {
   outline: none;
-  border-color: #14b8a6;
-  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--surface);
 }
 
 .age-inputs {
@@ -485,7 +476,7 @@ const toggleBookmark = async (profile) => {
 }
 
 .age-separator {
-  color: #9ca3af;
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
@@ -502,8 +493,8 @@ const toggleBookmark = async (profile) => {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.8rem 1.5rem;
-  background: linear-gradient(135deg, #14b8a6, #0d9488);
-  color: white;
+  background: var(--primary);
+  color: var(--bg);
   border: none;
   border-radius: 0.6rem;
   font-weight: 600;
@@ -514,7 +505,7 @@ const toggleBookmark = async (profile) => {
 
 .btn-search:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(20, 184, 166, 0.4);
+  box-shadow: var(--shadow-lg);
 }
 
 .btn-search:disabled {
@@ -529,9 +520,9 @@ const toggleBookmark = async (profile) => {
 
 .btn-clear {
   padding: 0.8rem 1.5rem;
-  background: rgba(107, 114, 128, 0.1);
-  color: #6b7280;
-  border: 1px solid rgba(107, 114, 128, 0.2);
+  background: var(--surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
   border-radius: 0.6rem;
   font-weight: 600;
   font-size: 0.95rem;
@@ -540,8 +531,8 @@ const toggleBookmark = async (profile) => {
 }
 
 .btn-clear:hover {
-  background: rgba(107, 114, 128, 0.2);
-  color: #374151;
+  background: var(--border);
+  color: var(--text-primary);
 }
 
 .results-grid {
@@ -551,23 +542,22 @@ const toggleBookmark = async (profile) => {
 }
 
 .profile-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(20, 184, 166, 0.1);
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 1rem;
   overflow: hidden;
   transition: all 0.3s;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-md);
 }
 
-:global(.dark) .profile-card {
-  background: rgba(31, 41, 55, 0.8);
-  border-color: rgba(139, 92, 246, 0.15);
+[data-theme="dark"] .profile-card {
+  background: var(--surface);
+  border-color: var(--border);
 }
 
 .profile-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(20, 184, 166, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .profile-image {
@@ -585,8 +575,8 @@ const toggleBookmark = async (profile) => {
 .avatar-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #14b8a6, #8b5cf6);
-  color: white;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -599,8 +589,8 @@ const toggleBookmark = async (profile) => {
   top: 0.75rem;
   right: 0.75rem;
   padding: 0.25rem 0.6rem;
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
+  background: var(--success);
+  color: var(--bg);
   border-radius: 9999px;
   font-size: 0.7rem;
   font-weight: 700;
@@ -613,23 +603,15 @@ const toggleBookmark = async (profile) => {
 .profile-info h3 {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
   margin: 0 0 0.25rem;
-}
-
-:global(.dark) .profile-info h3 {
-  color: #f9fafb;
 }
 
 .bio {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin: 0 0 0.75rem;
   line-height: 1.4;
-}
-
-:global(.dark) .bio {
-  color: #9ca3af;
 }
 
 .interests {
@@ -641,25 +623,12 @@ const toggleBookmark = async (profile) => {
 
 .interest-tag {
   padding: 0.2rem 0.5rem;
-  background: linear-gradient(
-    135deg,
-    rgba(20, 184, 166, 0.12),
-    rgba(139, 92, 246, 0.12)
-  );
-  color: #4b5563;
+  background: var(--surface);
+  color: var(--text-secondary);
   border-radius: 9999px;
   font-size: 0.65rem;
   font-weight: 600;
-  border: 1px solid rgba(20, 184, 166, 0.15);
-}
-
-:global(.dark) .interest-tag {
-  background: linear-gradient(
-    135deg,
-    rgba(20, 184, 166, 0.2),
-    rgba(139, 92, 246, 0.2)
-  );
-  color: #d1d5db;
+  border: 1px solid var(--border);
 }
 
 .profile-actions {
@@ -667,32 +636,28 @@ const toggleBookmark = async (profile) => {
   justify-content: space-between;
   align-items: center;
   padding-top: 0.75rem;
-  border-top: 1px solid rgba(229, 231, 235, 0.5);
-}
-
-:global(.dark) .profile-actions {
-  border-color: rgba(55, 65, 81, 0.5);
+  border-top: 1px solid var(--border);
 }
 
 .btn-bookmark {
   background: none;
-  border: 1px solid rgba(107, 114, 128, 0.3);
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
   padding: 0.4rem;
   cursor: pointer;
-  color: #9ca3af;
+  color: var(--text-secondary);
   transition: all 0.2s;
 }
 
 .btn-bookmark:hover {
-  border-color: #14b8a6;
-  color: #14b8a6;
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .btn-bookmark.active {
-  background: linear-gradient(135deg, #14b8a6, #0d9488);
-  border-color: #14b8a6;
-  color: white;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--bg);
 }
 
 .bookmark-icon {
@@ -702,10 +667,9 @@ const toggleBookmark = async (profile) => {
 
 .btn-view {
   padding: 0.5rem 1rem;
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  color: white;
+  background: var(--accent);
+  color: var(--text-primary);
   border-radius: 0.5rem;
-  text-decoration: none;
   font-size: 0.8rem;
   font-weight: 600;
   transition: all 0.2s;
@@ -713,7 +677,7 @@ const toggleBookmark = async (profile) => {
 
 .btn-view:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+  box-shadow: var(--shadow-md);
 }
 
 .no-results {
@@ -727,16 +691,12 @@ const toggleBookmark = async (profile) => {
 }
 
 .no-results h3 {
-  color: #374151;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
-:global(.dark) .no-results h3 {
-  color: #f3f4f6;
-}
-
 .no-results p {
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .loading {
@@ -747,8 +707,8 @@ const toggleBookmark = async (profile) => {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(20, 184, 166, 0.2);
-  border-top-color: #14b8a6;
+  border: 3px solid var(--surface);
+  border-top-color: var(--primary);
   border-radius: 50%;
   margin: 0 auto 1rem;
   animation: spin 0.8s linear infinite;
@@ -761,7 +721,7 @@ const toggleBookmark = async (profile) => {
 }
 
 .loading p {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 </style>

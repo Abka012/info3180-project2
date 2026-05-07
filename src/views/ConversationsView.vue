@@ -123,7 +123,11 @@ onUnmounted(() => {
 .conversations-header h1 {
   font-size: 2rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #14b8a6, #8b5cf6);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-accent)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -131,11 +135,11 @@ onUnmounted(() => {
 }
 
 .conversations-header p {
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
-:global(.dark) .conversations-header p {
-  color: #9ca3af;
+[data-theme="dark"] .conversations-header p {
+  color: var(--color-text-secondary);
 }
 
 .conversations-list {
@@ -148,37 +152,37 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--bg);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(20, 184, 166, 0.1);
+  border: 1px solid var(--surface);
   border-radius: 1rem;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-:global(.dark) .conversation-item {
-  background: rgba(31, 41, 55, 0.6);
-  border-color: rgba(139, 92, 246, 0.15);
+[data-theme="dark"] .conversation-item {
+  background: var(--color-surface);
+  border-color: var(--surface);
 }
 
 .conversation-item:hover {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--bg);
   transform: translateX(4px);
-  box-shadow: 0 4px 15px rgba(20, 184, 166, 0.1);
+  box-shadow: 0 4px 15px var(--surface);
 }
 
-:global(.dark) .conversation-item:hover {
-  background: rgba(55, 65, 81, 0.8);
+[data-theme="dark"] .conversation-item:hover {
+  background: var(--color-card);
 }
 
 .conversation-item.unread {
-  background: rgba(20, 184, 166, 0.08);
-  border-color: rgba(20, 184, 166, 0.2);
+  background: var(--surface);
+  border-color: var(--surface);
 }
 
-:global(.dark) .conversation-item.unread {
-  background: rgba(139, 92, 246, 0.1);
-  border-color: rgba(139, 92, 246, 0.3);
+[data-theme="dark"] .conversation-item.unread {
+  background: var(--surface);
+  border-color: var(--surface);
 }
 
 .conversation-avatar {
@@ -189,7 +193,7 @@ onUnmounted(() => {
   overflow: hidden;
   margin-right: 1rem;
   flex-shrink: 0;
-  border: 2px solid rgba(20, 184, 166, 0.2);
+  border: 2px solid var(--surface);
 }
 
 .conversation-avatar img {
@@ -201,8 +205,12 @@ onUnmounted(() => {
 .avatar-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #14b8a6, #8b5cf6);
-  color: white;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-accent)
+  );
+  color: var(--color-text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -216,13 +224,13 @@ onUnmounted(() => {
   right: 2px;
   width: 12px;
   height: 12px;
-  background: #10b981;
-  border: 2px solid white;
+  background: var(--color-success);
+  border: 2px solid var(--bg);
   border-radius: 50%;
 }
 
-:global(.dark) .online-indicator {
-  border-color: #1f2937;
+[data-theme="dark"] .online-indicator {
+  border-color: var(--color-text);
 }
 
 .conversation-content {
@@ -240,22 +248,22 @@ onUnmounted(() => {
 .conversation-header h3 {
   font-size: 1rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--color-text);
   margin: 0;
 }
 
-:global(.dark) .conversation-header h3 {
-  color: #f9fafb;
+[data-theme="dark"] .conversation-header h3 {
+  color: var(--color-text);
 }
 
 .time {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 
 .last-message {
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-size: 0.85rem;
   margin: 0;
   white-space: nowrap;
@@ -263,22 +271,26 @@ onUnmounted(() => {
   text-overflow: ellipsis;
 }
 
-:global(.dark) .last-message {
-  color: #9ca3af;
+[data-theme="dark"] .last-message {
+  color: var(--color-text-secondary);
 }
 
 .conversation-item.unread .last-message {
-  color: #374151;
+  color: var(--color-text);
   font-weight: 500;
 }
 
-:global(.dark) .conversation-item.unread .last-message {
-  color: #d1d5db;
+[data-theme="dark"] .conversation-item.unread .last-message {
+  color: var(--color-text-secondary);
 }
 
 .unread-badge {
-  background: linear-gradient(135deg, #14b8a6, #0d9488);
-  color: white;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-light),
+    var(--color-primary)
+  );
+  color: var(--color-text);
   border-radius: 50%;
   width: 22px;
   height: 22px;
@@ -294,14 +306,14 @@ onUnmounted(() => {
 .no-conversations {
   text-align: center;
   padding: 4rem 2rem;
-  background: rgba(31, 41, 55, 0.5);
+  background: var(--bg);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(20, 184, 166, 0.1);
+  border: 1px solid var(--surface);
   border-radius: 1rem;
 }
 
-:global(.dark) .no-conversations {
-  background: rgba(255, 255, 255, 0.5);
+[data-theme="dark"] .no-conversations {
+  background: var(--color-surface);
 }
 
 .no-conversations-icon {
@@ -310,21 +322,21 @@ onUnmounted(() => {
 }
 
 .no-conversations h3 {
-  color: #9ca3af;
+  color: var(--color-text);
   margin-bottom: 0.5rem;
 }
 
-:global(.dark) .no-conversations h3 {
-  color: #6b7280;
+[data-theme="dark"] .no-conversations h3 {
+  color: var(--color-text);
 }
 
 .no-conversations p {
-  color: #f3f4f6;
+  color: var(--color-text-secondary);
   margin-bottom: 1.5rem;
 }
 
-:global(.dark) .no-conversations p {
-  color: #374151;
+[data-theme="dark"] .no-conversations p {
+  color: var(--color-text-secondary);
 }
 
 .btn-primary {
@@ -332,17 +344,20 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #14b8a6, #0d9488);
-  color: white;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-light),
+    var(--color-primary)
+  );
+  color: var(--color-text);
   border-radius: 0.6rem;
-  text-decoration: none;
   font-weight: 600;
   transition: all 0.2s;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(20, 184, 166, 0.4);
+  box-shadow: 0 6px 20px var(--surface);
 }
 
 .loading {
@@ -353,8 +368,8 @@ onUnmounted(() => {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(20, 184, 166, 0.2);
-  border-top-color: #14b8a6;
+  border: 3px solid var(--border);
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   margin: 0 auto 1rem;
   animation: spin 0.8s linear infinite;
@@ -367,7 +382,7 @@ onUnmounted(() => {
 }
 
 .loading p {
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 </style>

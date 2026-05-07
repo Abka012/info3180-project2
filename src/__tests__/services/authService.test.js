@@ -369,9 +369,10 @@ describe("authService - Core Functions", () => {
         data: { user_id: 1 },
       });
 
-      await authService.register("test@example.com", "Password123!");
+      await authService.register("Test User", "test@example.com", "Password123!");
 
       expect(api.post).toHaveBeenCalledWith("/api/auth/register", {
+        name: "Test User",
         email: "test@example.com",
         password: "Password123!",
         confirm_password: "Password123!",
